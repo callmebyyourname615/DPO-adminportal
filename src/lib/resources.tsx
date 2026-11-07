@@ -37,7 +37,7 @@ export interface ColumnDef {
   key: string;
   label: string;
   className?: string | undefined;
-  render?: (row: Record<string | undefined, any>) => ReactNode;
+  render?: (row: Record<string, any>) => ReactNode;
 }
 
 export interface FilterDef {
@@ -55,7 +55,7 @@ export interface ResourceDef {
   filters: FilterDef[];
   fields: FieldDef[];
   preview?: "article" | "faq" | undefined;
-  publicUrl?: (row: Record<string | undefined, any>) => string | null;
+  publicUrl?: (row: Record<string, any>) => string | null;
   canCreate?: boolean | undefined;
   readOnlyDetail?: boolean | undefined;
   slugResource?: "news" | "pages" | undefined;
@@ -94,7 +94,7 @@ const inquiryStatus = [
 const label = (opts: { value: string; label: string }[], v: string) =>
   opts.find((o) => o.value === v)?.label ?? v ?? "—";
 
-const publicSiteUrl = (import.meta.env.VITE_DPO_PUBLIC_SITE_URL as string | undefined)?.replace(
+const publicSiteUrl = (import.meta.env["VITE_DPO_PUBLIC_SITE_URL"] as string | undefined)?.replace(
   /\/+$/,
   "",
 );

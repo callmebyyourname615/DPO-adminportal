@@ -200,7 +200,7 @@ function InquiryDetail({ v }: { v: Values }) {
           ["วันที่", formatDate(v["createdAt"] as string)],
         ].map(([k, val]) => (
           <div key={k as string}>
-            <dt className="text-xs text-muted-foreground">{k}</dt>
+            <dt className="text-xs text-muted-foreground">{String(k)}</dt>
             <dd className="font-medium break-words">{(val as string) || "—"}</dd>
           </div>
         ))}
