@@ -55,6 +55,3 @@ export function PageHeader({
   );
 }
 
-export function ConnectionNotice() {
-  return null;
-}
