@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ResourceList } from "@/components/admin/ResourceList";
+import { MockInquirySimulator } from "@/components/admin/MockInquirySimulator";
+import { isMockMode } from "@/lib/api/client";
 import { parseListSearch } from "@/lib/list-search";
 
 export const Route = createFileRoute("/inquiries/")({
@@ -17,5 +19,5 @@ export const Route = createFileRoute("/inquiries/")({
 
 function Page() {
   const search = Route.useSearch();
-  return <ResourceList resourceKey="inquiries" search={search} />;
+  return <ResourceList resourceKey="inquiries" search={search} extra={isMockMode() ? <MockInquirySimulator /> : undefined} />;
 }
