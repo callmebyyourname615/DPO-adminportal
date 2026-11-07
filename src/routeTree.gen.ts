@@ -10,6 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MediaRouteImport } from './routes/media'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as UsersRouteImport } from './routes/users'
 import { Route as DocumentsIndexRouteImport } from './routes/documents.index'
 import { Route as DocumentsIdRouteImport } from './routes/documents.$id'
 import { Route as FaqsIndexRouteImport } from './routes/faqs.index'
@@ -28,6 +31,21 @@ import { Route as PartnersIdRouteImport } from './routes/partners.$id'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MediaRoute = MediaRouteImport.update({
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsersRoute = UsersRouteImport.update({
+  id: '/users',
+  path: '/users',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentsIndexRoute = DocumentsIndexRouteImport.update({
@@ -103,6 +121,9 @@ const PartnersIdRoute = PartnersIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/media': typeof MediaRoute
+  '/settings': typeof SettingsRoute
+  '/users': typeof UsersRoute
   '/documents/$id': typeof DocumentsIdRoute
   '/faqs/$id': typeof FaqsIdRoute
   '/home/$id': typeof HomeIdRoute
@@ -120,6 +141,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/media': typeof MediaRoute
+  '/settings': typeof SettingsRoute
+  '/users': typeof UsersRoute
   '/documents/$id': typeof DocumentsIdRoute
   '/faqs/$id': typeof FaqsIdRoute
   '/home/$id': typeof HomeIdRoute
@@ -138,6 +162,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/media': typeof MediaRoute
+  '/settings': typeof SettingsRoute
+  '/users': typeof UsersRoute
   '/documents/$id': typeof DocumentsIdRoute
   '/faqs/$id': typeof FaqsIdRoute
   '/home/$id': typeof HomeIdRoute
@@ -157,6 +184,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/media'
+    | '/settings'
+    | '/users'
     | '/documents/$id'
     | '/faqs/$id'
     | '/home/$id'
@@ -174,6 +204,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/media'
+    | '/settings'
+    | '/users'
     | '/documents/$id'
     | '/faqs/$id'
     | '/home/$id'
@@ -191,6 +224,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/media'
+    | '/settings'
+    | '/users'
     | '/documents/$id'
     | '/faqs/$id'
     | '/home/$id'
@@ -209,6 +245,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MediaRoute: typeof MediaRoute
+  SettingsRoute: typeof SettingsRoute
+  UsersRoute: typeof UsersRoute
   DocumentsIdRoute: typeof DocumentsIdRoute
   FaqsIdRoute: typeof FaqsIdRoute
   HomeIdRoute: typeof HomeIdRoute
@@ -232,6 +271,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/media': {
+      id: '/media'
+      path: '/media'
+      fullPath: '/media'
+      preLoaderRoute: typeof MediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/users': {
+      id: '/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof UsersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/documents/': {
@@ -337,6 +397,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MediaRoute: MediaRoute,
+  SettingsRoute: SettingsRoute,
+  UsersRoute: UsersRoute,
   DocumentsIdRoute: DocumentsIdRoute,
   FaqsIdRoute: FaqsIdRoute,
   HomeIdRoute: HomeIdRoute,
