@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Pencil, Plus, Search } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { services } from "@/lib/api/services";
+import { services, type CrudService } from "@/lib/api/services";
 import { t } from "@/lib/i18n";
 import type { ListSearch } from "@/lib/list-search";
 import { resources } from "@/lib/resources";
@@ -22,8 +22,8 @@ export function ResourceList({
   search: ListSearch;
   extra?: ReactNode;
 }) {
-  const def = resources[resourceKey];
-  const svc = services[def.key];
+  const def = resources[resourceKey]!;
+  const svc = services[def.key] as CrudService<any>;
   const navigate = useNavigate();
   const [q, setQ] = useState(search.q ?? "");
   useEffect(() => setQ(search.q ?? ""), [search.q]);

@@ -52,8 +52,8 @@ export function HomeIntroPanel() {
         </form>
         <aside className="rounded-md bg-muted p-4 xl:col-span-5" aria-label={t("preview")}>
           <p className="mb-2 text-xs uppercase text-muted-foreground">{t("preview")}</p>
-          <h3 className="text-lg font-semibold">{(v.title as string) || "หัวข้อแนะนำ"}</h3>
-          <p className="mt-2 whitespace-pre-wrap text-sm">{(v.content as string) || ""}</p>
+          <h3 className="text-lg font-semibold">{(v["title"] as string) || "หัวข้อแนะนำ"}</h3>
+          <p className="mt-2 whitespace-pre-wrap text-sm">{(v["content"] as string) || ""}</p>
         </aside>
       </div>
     </section>
