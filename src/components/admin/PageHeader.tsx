@@ -5,7 +5,7 @@ import { t } from "@/lib/i18n";
 
 export interface Crumb {
   label: string;
-  to?: string;
+  to?: string | undefined;
 }
 
 export function PageHeader({
@@ -15,9 +15,9 @@ export function PageHeader({
   description,
 }: {
   title: string;
-  crumbs?: Crumb[];
-  actions?: ReactNode;
-  description?: string;
+  crumbs?: Crumb[] | undefined;
+  actions?: ReactNode | undefined;
+  description?: string | undefined;
 }) {
   return (
     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

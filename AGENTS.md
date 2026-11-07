@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- All data goes through `src/lib/api/services.ts` (proposed admin contract); with no `VITE_DPO_API_BASE_URL` calls throw `ApiNotConnectedError` and the UI shows a "not connected" state — never mock business data.
+- CRUD sections are config-driven from `src/lib/resources.tsx` and rendered by the generic `ResourceList`/`ResourceForm`, so new sections stay consistent.
+- Pending backend endpoints are listed in `docs/BACKEND_ENDPOINTS.md`; keep it in sync with services.

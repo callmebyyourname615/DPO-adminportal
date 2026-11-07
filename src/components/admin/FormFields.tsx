@@ -36,7 +36,7 @@ export function FieldInput({
 }: {
   field: FieldDef;
   value: unknown;
-  error?: string;
+  error?: string | undefined;
   values: Values;
   onChange: (v: unknown) => void;
 }) {

@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Pencil, Plus, Search } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { services } from "@/lib/api/services";
+import { services, type CrudService } from "@/lib/api/services";
 import { t } from "@/lib/i18n";
 import type { ListSearch } from "@/lib/list-search";
 import { resources } from "@/lib/resources";
@@ -20,10 +20,10 @@ export function ResourceList({
 }: {
   resourceKey: string;
   search: ListSearch;
-  extra?: ReactNode;
+  extra?: ReactNode | undefined;
 }) {
-  const def = resources[resourceKey];
-  const svc = services[def.key];
+  const def = resources[resourceKey]!;
+  const svc = services[def.key] as CrudService<any>;
   const navigate = useNavigate();
   const [q, setQ] = useState(search.q ?? "");
   useEffect(() => setQ(search.q ?? ""), [search.q]);
@@ -125,7 +125,7 @@ export function ResourceList({
                 </thead>
                 <tbody>
                   {rows.map((r) => (
-                    <tr key={r.id} className="border-t border-border hover:bg-muted/50">
+                    <tr key={r["id"]} className="border-t border-border hover:bg-muted/50">
                       {def.columns.map((c) => (
                         <td key={c.key} className={`px-3 py-2.5 align-middle ${c.className ?? ""}`}>
                           {c.render ? c.render(r) : (r[c.key] ?? "—")}
@@ -133,7 +133,7 @@ export function ResourceList({
                       ))}
                       <td className="px-3 py-2 text-right">
                         <Button asChild variant="ghost" size="sm">
-                          <Link to={detail} params={{ id: String(r.id) }}>
+                          <Link to={detail} params={{ id: String(r["id"]) }}>
                             <Pencil className="size-3.5" />
                             {def.readOnlyDetail ? "ดูรายละเอียด" : t("edit")}
                           </Link>

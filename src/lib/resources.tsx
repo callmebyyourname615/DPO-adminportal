@@ -23,20 +23,20 @@ export interface FieldDef {
   name: string;
   label: string;
   type: FieldType;
-  required?: boolean;
-  options?: { value: string; label: string }[];
-  slugFrom?: string;
-  accept?: string[];
-  maxMb?: number;
-  help?: string;
-  wide?: boolean;
-  max?: number;
+  required?: boolean | undefined;
+  options?: { value: string | undefined; label: string }[];
+  slugFrom?: string | undefined;
+  accept?: string[] | undefined;
+  maxMb?: number | undefined;
+  help?: string | undefined;
+  wide?: boolean | undefined;
+  max?: number | undefined;
 }
 
 export interface ColumnDef {
   key: string;
   label: string;
-  className?: string;
+  className?: string | undefined;
   render?: (row: Record<string, any>) => ReactNode;
 }
 
@@ -54,12 +54,12 @@ export interface ResourceDef {
   columns: ColumnDef[];
   filters: FilterDef[];
   fields: FieldDef[];
-  preview?: "article" | "faq";
+  preview?: "article" | "faq" | undefined;
   publicUrl?: (row: Record<string, any>) => string | null;
-  canCreate?: boolean;
-  readOnlyDetail?: boolean;
-  slugResource?: "news" | "pages";
-  searchPlaceholder?: string;
+  canCreate?: boolean | undefined;
+  readOnlyDetail?: boolean | undefined;
+  slugResource?: "news" | "pages" | undefined;
+  searchPlaceholder?: string | undefined;
 }
 
 const statusOpts = [
@@ -94,7 +94,7 @@ const inquiryStatus = [
 const label = (opts: { value: string; label: string }[], v: string) =>
   opts.find((o) => o.value === v)?.label ?? v ?? "—";
 
-const publicSiteUrl = (import.meta.env.VITE_DPO_PUBLIC_SITE_URL as string | undefined)?.replace(
+const publicSiteUrl = (import.meta.env["VITE_DPO_PUBLIC_SITE_URL"] as string | undefined)?.replace(
   /\/+$/,
   "",
 );
@@ -102,7 +102,7 @@ const publicSiteUrl = (import.meta.env.VITE_DPO_PUBLIC_SITE_URL as string | unde
 const statusCol: ColumnDef = {
   key: "status",
   label: "สถานะ",
-  render: (r) => <StatusBadge status={r.status} />,
+  render: (r) => <StatusBadge status={r["status"]} />,
 };
 
 export const resources: Record<string, ResourceDef> = {
@@ -114,11 +114,11 @@ export const resources: Record<string, ResourceDef> = {
     slugResource: "news",
     preview: "article",
     searchPlaceholder: "ค้นหาหัวข้อข่าว",
-    publicUrl: (r) => (publicSiteUrl && r.slug ? `${publicSiteUrl}/news/${r.slug}` : null),
+    publicUrl: (r) => (publicSiteUrl && r["slug"] ? `${publicSiteUrl}/news/${r["slug"]}` : null),
     columns: [
       { key: "title", label: "หัวข้อ", className: "min-w-64 font-medium" },
-      { key: "category", label: "หมวดหมู่", render: (r) => label(newsCategories, r.category) },
-      { key: "publishedAt", label: "วันที่", render: (r) => formatDate(r.publishedAt) },
+      { key: "category", label: "หมวดหมู่", render: (r) => label(newsCategories, r["category"]) },
+      { key: "publishedAt", label: "วันที่", render: (r) => formatDate(r["publishedAt"]) },
       statusCol,
     ],
     filters: [
@@ -145,11 +145,11 @@ export const resources: Record<string, ResourceDef> = {
     searchPlaceholder: "ค้นหาชื่อเอกสาร",
     columns: [
       { key: "title", label: "ชื่อเอกสาร", className: "min-w-64 font-medium" },
-      { key: "category", label: "หมวด", render: (r) => label(documentCategories, r.category) },
-      { key: "fileType", label: "ชนิด", render: (r) => (r.fileType ? String(r.fileType).toUpperCase() : "—") },
-      { key: "fileSize", label: "ขนาด", className: "num", render: (r) => formatBytes(r.fileSize) },
-      { key: "documentDate", label: "วันที่", render: (r) => formatDate(r.documentDate) },
-      { key: "fileStatus", label: "ไฟล์", render: (r) => <StatusBadge status={r.fileStatus} /> },
+      { key: "category", label: "หมวด", render: (r) => label(documentCategories, r["category"]) },
+      { key: "fileType", label: "ชนิด", render: (r) => (r["fileType"] ? String(r["fileType"]).toUpperCase() : "—") },
+      { key: "fileSize", label: "ขนาด", className: "num", render: (r) => formatBytes(r["fileSize"]) },
+      { key: "documentDate", label: "วันที่", render: (r) => formatDate(r["documentDate"]) },
+      { key: "fileStatus", label: "ไฟล์", render: (r) => <StatusBadge status={r["fileStatus"]} /> },
     ],
     filters: [{ param: "category", label: "ประเภท", options: documentCategories }],
     fields: [
@@ -172,9 +172,9 @@ export const resources: Record<string, ResourceDef> = {
       { key: "name", label: "ชื่อ", className: "font-medium" },
       { key: "email", label: "อีเมล" },
       { key: "subject", label: "หัวข้อ", className: "min-w-56" },
-      { key: "source", label: "ที่มา", render: (r) => (r.source === "faq" ? "FAQ" : "หน้าติดต่อ") },
-      { key: "createdAt", label: "วันที่", render: (r) => formatDate(r.createdAt) },
-      { key: "status", label: "สถานะ", render: (r) => <StatusBadge status={r.status} /> },
+      { key: "source", label: "ที่มา", render: (r) => (r["source"] === "faq" ? "FAQ" : "หน้าติดต่อ") },
+      { key: "createdAt", label: "วันที่", render: (r) => formatDate(r["createdAt"]) },
+      { key: "status", label: "สถานะ", render: (r) => <StatusBadge status={r["status"]} /> },
     ],
     filters: [{ param: "status", label: "สถานะ", options: inquiryStatus }],
     fields: [{ name: "status", label: "สถานะ", type: "select", required: true, options: inquiryStatus }],
@@ -253,11 +253,11 @@ export const resources: Record<string, ResourceDef> = {
     slugResource: "pages",
     preview: "article",
     searchPlaceholder: "ค้นหาหน้า",
-    publicUrl: (r) => (publicSiteUrl && r.slug ? `${publicSiteUrl}/${r.slug}` : null),
+    publicUrl: (r) => (publicSiteUrl && r["slug"] ? `${publicSiteUrl}/${r["slug"]}` : null),
     columns: [
       { key: "title", label: "ชื่อหน้า", className: "min-w-56 font-medium" },
       { key: "slug", label: "Slug" },
-      { key: "updatedAt", label: "แก้ไขล่าสุด", render: (r) => formatDate(r.updatedAt) },
+      { key: "updatedAt", label: "แก้ไขล่าสุด", render: (r) => formatDate(r["updatedAt"]) },
       statusCol,
     ],
     filters: [{ param: "status", label: "สถานะ", options: statusOpts }],

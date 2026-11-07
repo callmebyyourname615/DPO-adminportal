@@ -16,7 +16,7 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { ApiNotConnectedError, isApiConfigured } from "@/lib/api/client";
-import { services } from "@/lib/api/services";
+import { services, type CrudService } from "@/lib/api/services";
 import { formatDate, t } from "@/lib/i18n";
 import { resources, type FieldDef } from "@/lib/resources";
 import { PageHeader } from "./PageHeader";
@@ -24,8 +24,8 @@ import { QueryState, StateBlock } from "./StateBlock";
 import { FieldInput, validateFields, type Values } from "./FormFields";
 
 export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: string }) {
-  const def = resources[resourceKey];
-  const svc = services[def.key];
+  const def = resources[resourceKey]!;
+  const svc = services[def.key] as CrudService<any>;
   const isNew = id === "new";
   const qc = useQueryClient();
   const navigate = useNavigate();
@@ -74,8 +74,8 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: str
       toast.error("กรุณาตรวจสอบข้อมูลที่กรอก");
       return;
     }
-    const wasPublished = (item.data as Values | undefined)?.status === "published";
-    if (!skipConfirm && wasPublished && values.status === "draft") return setConfirm("unpublish");
+    const wasPublished = (item.data as Values | undefined)?.["status"] === "published";
+    if (!skipConfirm && wasPublished && values["status"] === "draft") return setConfirm("unpublish");
     save.mutate(values);
   };
 
@@ -85,7 +85,7 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: str
   const header = (
     <PageHeader
       title={title}
-      crumbs={[{ label: def.title, to: def.basePath }, { label: isNew ? t("add") : String(values.title ?? values.question ?? values.name ?? values.subject ?? id) }]}
+      crumbs={[{ label: def.title, to: def.basePath }, { label: isNew ? t("add") : String(values["title"] ?? values["question"] ?? values["name"] ?? values["subject"] ?? id) }]}
       actions={
         <>
           {publicUrl && (
@@ -194,19 +194,19 @@ function InquiryDetail({ v }: { v: Values }) {
     <section className="panel p-[var(--panel-padding)] xl:col-span-8" aria-label="รายละเอียดข้อความ">
       <dl className="grid gap-3 text-sm sm:grid-cols-2">
         {[
-          ["ชื่อ", v.name],
-          ["อีเมล", v.email],
-          ["หัวข้อ", v.subject],
-          ["วันที่", formatDate(v.createdAt as string)],
+          ["ชื่อ", v["name"]],
+          ["อีเมล", v["email"]],
+          ["หัวข้อ", v["subject"]],
+          ["วันที่", formatDate(v["createdAt"] as string)],
         ].map(([k, val]) => (
           <div key={k as string}>
-            <dt className="text-xs text-muted-foreground">{k}</dt>
+            <dt className="text-xs text-muted-foreground">{String(k)}</dt>
             <dd className="font-medium break-words">{(val as string) || "—"}</dd>
           </div>
         ))}
       </dl>
       <h2 className="mt-4 text-xs text-muted-foreground">ข้อความ</h2>
-      <p className="mt-1 whitespace-pre-wrap rounded-md bg-muted p-3 text-sm">{(v.message as string) || "—"}</p>
+      <p className="mt-1 whitespace-pre-wrap rounded-md bg-muted p-3 text-sm">{(v["message"] as string) || "—"}</p>
       <p className="mt-3 text-xs text-muted-foreground">
         การตอบกลับทางอีเมลยังไม่รองรับ เนื่องจากยังไม่มี API สำหรับส่งอีเมล
       </p>
@@ -221,22 +221,22 @@ function Preview({ kind, v }: { kind: "article" | "faq"; v: Values }) {
       {kind === "faq" ? (
         <Accordion type="single" collapsible defaultValue="q">
           <AccordionItem value="q">
-            <AccordionTrigger>{(v.question as string) || "คำถาม"}</AccordionTrigger>
-            <AccordionContent className="whitespace-pre-wrap">{(v.answer as string) || "คำตอบ"}</AccordionContent>
+            <AccordionTrigger>{(v["question"] as string) || "คำถาม"}</AccordionTrigger>
+            <AccordionContent className="whitespace-pre-wrap">{(v["answer"] as string) || "คำตอบ"}</AccordionContent>
           </AccordionItem>
         </Accordion>
       ) : (
         <article>
-          {typeof (v.coverImageUrl ?? v.imageUrl) === "string" && (v.coverImageUrl || v.imageUrl) ? (
-            <img src={(v.coverImageUrl || v.imageUrl) as string} alt="" className="mb-3 aspect-video w-full rounded-md object-cover" />
+          {typeof (v["coverImageUrl"] ?? v["imageUrl"]) === "string" && (v["coverImageUrl"] || v["imageUrl"]) ? (
+            <img src={(v["coverImageUrl"] || v["imageUrl"]) as string} alt="" className="mb-3 aspect-video w-full rounded-md object-cover" />
           ) : (
             <div className="mb-3 grid aspect-video w-full place-items-center rounded-md bg-muted text-xs text-muted-foreground">
               ยังไม่มีภาพ
             </div>
           )}
-          <h2 className="text-lg font-semibold">{(v.title as string) || "หัวข้อ"}</h2>
-          {v.excerpt ? <p className="mt-1 text-sm text-muted-foreground">{v.excerpt as string}</p> : null}
-          <p className="mt-3 whitespace-pre-wrap text-sm">{(v.content as string) || ""}</p>
+          <h2 className="text-lg font-semibold">{(v["title"] as string) || "หัวข้อ"}</h2>
+          {v["excerpt"] ? <p className="mt-1 text-sm text-muted-foreground">{String(v["excerpt"])}</p> : null}
+          <p className="mt-3 whitespace-pre-wrap text-sm">{(v["content"] as string) || ""}</p>
         </article>
       )}
     </aside>
