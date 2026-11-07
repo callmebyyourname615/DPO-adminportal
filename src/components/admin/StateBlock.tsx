@@ -13,10 +13,10 @@ export function StateBlock({
   compact,
 }: {
   kind: Kind;
-  title?: string;
-  hint?: string;
-  onRetry?: () => void;
-  compact?: boolean;
+  title?: string | undefined;
+  hint?: string | undefined;
+  onRetry?: () => void | undefined;
+  compact?: boolean | undefined;
 }) {
   const Icon = { loading: Loader2, empty: Inbox, error: AlertTriangle, "not-connected": PlugZap }[kind];
   const defaults = {
@@ -64,8 +64,8 @@ export function QueryState({
   isLoading: boolean;
   error: unknown;
   isEmpty: boolean;
-  onRetry?: () => void;
-  compact?: boolean;
+  onRetry?: () => void | undefined;
+  compact?: boolean | undefined;
 }) {
   if (isLoading) return <StateBlock kind="loading" compact={compact} />;
   if (error instanceof ApiNotConnectedError) return <StateBlock kind="not-connected" compact={compact} />;

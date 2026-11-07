@@ -20,7 +20,7 @@ export function ResourceList({
 }: {
   resourceKey: string;
   search: ListSearch;
-  extra?: ReactNode;
+  extra?: ReactNode | undefined;
 }) {
   const def = resources[resourceKey]!;
   const svc = services[def.key] as CrudService<any>;
@@ -125,7 +125,7 @@ export function ResourceList({
                 </thead>
                 <tbody>
                   {rows.map((r) => (
-                    <tr key={r.id} className="border-t border-border hover:bg-muted/50">
+                    <tr key={r["id"]} className="border-t border-border hover:bg-muted/50">
                       {def.columns.map((c) => (
                         <td key={c.key} className={`px-3 py-2.5 align-middle ${c.className ?? ""}`}>
                           {c.render ? c.render(r) : (r[c.key] ?? "—")}
@@ -133,7 +133,7 @@ export function ResourceList({
                       ))}
                       <td className="px-3 py-2 text-right">
                         <Button asChild variant="ghost" size="sm">
-                          <Link to={detail} params={{ id: String(r.id) }}>
+                          <Link to={detail} params={{ id: String(r["id"]) }}>
                             <Pencil className="size-3.5" />
                             {def.readOnlyDetail ? "ดูรายละเอียด" : t("edit")}
                           </Link>

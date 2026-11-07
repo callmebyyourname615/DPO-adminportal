@@ -1,8 +1,8 @@
 export interface ListSearch {
-  q?: string;
-  category?: string;
-  status?: string;
-  page?: number;
+  q?: string | undefined;
+  category?: string | undefined;
+  status?: string | undefined;
+  page?: number | undefined;
 }
 
 /** Validates list-page URL query params (?q=&category=&status=&page=). */

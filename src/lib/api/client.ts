@@ -28,7 +28,7 @@ export function isApiConfigured(): boolean {
   return getApiBaseUrl() !== null;
 }
 
-export function buildUrl(base: string, path: string, query?: Record<string, unknown>): string {
+export function buildUrl(base: string, path: string, query?: Record<string | undefined, unknown>): string {
   const url = new URL(base + path);
   if (query) {
     for (const [k, v] of Object.entries(query)) {
@@ -47,10 +47,10 @@ function getAuthHeaders(): Record<string, string> {
 }
 
 export interface RequestOptions {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
-  query?: Record<string, unknown>;
-  body?: unknown;
-  signal?: AbortSignal;
+  method?: "GET" | "POST" | "PATCH" | "DELETE" | undefined;
+  query?: Record<string | undefined, unknown>;
+  body?: unknown | undefined;
+  signal?: AbortSignal | undefined;
 }
 
 export async function apiRequest<T>(path: string, opts: RequestOptions = {}): Promise<T> {

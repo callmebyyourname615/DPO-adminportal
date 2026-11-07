@@ -146,9 +146,9 @@ export interface DashboardStats {
 }
 
 export interface ListQuery {
-  page?: number;
-  limit?: number;
-  q?: string;
-  category?: string;
-  status?: string;
+  page?: number | undefined;
+  limit?: number | undefined;
+  q?: string | undefined;
+  category?: string | undefined;
+  status?: string | undefined;
 }

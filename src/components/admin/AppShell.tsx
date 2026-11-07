@@ -21,9 +21,9 @@ import { Button } from "@/components/ui/button";
 import { isApiConfigured } from "@/lib/api/client";
 import { t, type I18nKey } from "@/lib/i18n";
 
-const authEnabled = import.meta.env.VITE_DPO_AUTH_ENABLED === "true";
+const authEnabled = import.meta.env["VITE_DPO_AUTH_ENABLED"] === "true";
 
-type Item = { to: string; key: I18nKey; icon: typeof Home; exact?: boolean };
+type Item = { to: string; key: I18nKey; icon: typeof Home; exact?: boolean | undefined };
 const groups: { label: I18nKey; items: Item[] }[] = [
   { label: "dashboard", items: [{ to: "/", key: "dashboard", icon: LayoutDashboard, exact: true }] },
   {
@@ -50,7 +50,7 @@ const groups: { label: I18nKey; items: Item[] }[] = [
     : []),
 ];
 
-function Nav({ onNavigate }: { onNavigate?: () => void }) {
+function Nav({ onNavigate }: { onNavigate?: () => void | undefined }) {
   return (
     <nav aria-label="เมนูหลัก" className="flex flex-col gap-4 px-3 py-4">
       {groups.map((g) => (

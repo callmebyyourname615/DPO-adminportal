@@ -235,7 +235,7 @@ function Preview({ kind, v }: { kind: "article" | "faq"; v: Values }) {
             </div>
           )}
           <h2 className="text-lg font-semibold">{(v["title"] as string) || "หัวข้อ"}</h2>
-          {v["excerpt"] ? <p className="mt-1 text-sm text-muted-foreground">{v["excerpt"] as string}</p> : null}
+          {v["excerpt"] ? <p className="mt-1 text-sm text-muted-foreground">{String(v["excerpt"])}</p> : null}
           <p className="mt-3 whitespace-pre-wrap text-sm">{(v["content"] as string) || ""}</p>
         </article>
       )}

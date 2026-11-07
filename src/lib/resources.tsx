@@ -23,21 +23,21 @@ export interface FieldDef {
   name: string;
   label: string;
   type: FieldType;
-  required?: boolean;
-  options?: { value: string; label: string }[];
-  slugFrom?: string;
-  accept?: string[];
-  maxMb?: number;
-  help?: string;
-  wide?: boolean;
-  max?: number;
+  required?: boolean | undefined;
+  options?: { value: string | undefined; label: string }[];
+  slugFrom?: string | undefined;
+  accept?: string[] | undefined;
+  maxMb?: number | undefined;
+  help?: string | undefined;
+  wide?: boolean | undefined;
+  max?: number | undefined;
 }
 
 export interface ColumnDef {
   key: string;
   label: string;
-  className?: string;
-  render?: (row: Record<string, any>) => ReactNode;
+  className?: string | undefined;
+  render?: (row: Record<string | undefined, any>) => ReactNode;
 }
 
 export interface FilterDef {
@@ -54,12 +54,12 @@ export interface ResourceDef {
   columns: ColumnDef[];
   filters: FilterDef[];
   fields: FieldDef[];
-  preview?: "article" | "faq";
-  publicUrl?: (row: Record<string, any>) => string | null;
-  canCreate?: boolean;
-  readOnlyDetail?: boolean;
-  slugResource?: "news" | "pages";
-  searchPlaceholder?: string;
+  preview?: "article" | "faq" | undefined;
+  publicUrl?: (row: Record<string | undefined, any>) => string | null;
+  canCreate?: boolean | undefined;
+  readOnlyDetail?: boolean | undefined;
+  slugResource?: "news" | "pages" | undefined;
+  searchPlaceholder?: string | undefined;
 }
 
 const statusOpts = [
