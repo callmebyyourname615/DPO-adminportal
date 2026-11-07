@@ -6,7 +6,7 @@ import { FieldInput, validateFields, type Values } from "@/components/admin/Form
 import { PageHeader } from "@/components/admin/PageHeader";
 import { QueryState } from "@/components/admin/StateBlock";
 import { Button } from "@/components/ui/button";
-import { isApiConfigured } from "@/lib/api/client";
+import { canUseData } from "@/lib/api/client";
 import { settingsService } from "@/lib/api/services";
 import { t } from "@/lib/i18n";
 import type { FieldDef } from "@/lib/resources";
@@ -61,7 +61,7 @@ function SettingsPage() {
           <FieldInput key={f.name} field={f} value={v[f.name]} values={v} error={errors[f.name]} onChange={(x) => setV((s) => ({ ...s, [f.name]: x }))} />
         ))}
         <div className="flex justify-end border-t border-border pt-4 md:col-span-2">
-          <Button type="submit" disabled={!isApiConfigured() || m.isPending} title={!isApiConfigured() ? t("saveDisabled") : undefined}>{t("save")}</Button>
+          <Button type="submit" disabled={!canUseData() || m.isPending} title={!canUseData() ? t("saveDisabled") : undefined}>{t("save")}</Button>
         </div>
       </form>
     </div>
