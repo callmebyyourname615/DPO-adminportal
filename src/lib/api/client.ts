@@ -20,7 +20,7 @@ export class ApiError extends Error {
 }
 
 export function getApiBaseUrl(): string | null {
-  const raw = (import.meta.env.VITE_DPO_API_BASE_URL as string | undefined)?.trim();
+  const raw = (import.meta.env["VITE_DPO_API_BASE_URL"] as string | undefined)?.trim();
   return raw ? raw.replace(/\/+$/, "") : null;
 }
 
@@ -28,7 +28,7 @@ export function isApiConfigured(): boolean {
   return getApiBaseUrl() !== null;
 }
 
-export function buildUrl(base: string, path: string, query?: Record<string | undefined, unknown>): string {
+export function buildUrl(base: string, path: string, query?: Record<string, unknown>): string {
   const url = new URL(base + path);
   if (query) {
     for (const [k, v] of Object.entries(query)) {
@@ -48,7 +48,7 @@ function getAuthHeaders(): Record<string, string> {
 
 export interface RequestOptions {
   method?: "GET" | "POST" | "PATCH" | "DELETE" | undefined;
-  query?: Record<string | undefined, unknown>;
+  query?: Record<string, unknown>;
   body?: unknown | undefined;
   signal?: AbortSignal | undefined;
 }
@@ -64,8 +64,8 @@ export async function apiRequest<T>(path: string, opts: RequestOptions = {}): Pr
       ...(opts.body && !isForm ? { "Content-Type": "application/json" } : {}),
       ...getAuthHeaders(),
     },
-    body: opts.body ? (isForm ? (opts.body as FormData) : JSON.stringify(opts.body)) : undefined,
-    signal: opts.signal,
+    body: (opts.body ? (isForm ? (opts.body as FormData) : JSON.stringify(opts.body)) : null) as BodyInit | null,
+    ...(opts.signal ? { signal: opts.signal } : {}),
   });
   if (!res.ok) {
     let msg = res.statusText;

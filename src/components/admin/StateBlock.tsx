@@ -15,7 +15,7 @@ export function StateBlock({
   kind: Kind;
   title?: string | undefined;
   hint?: string | undefined;
-  onRetry?: () => void | undefined;
+  onRetry?: (() => unknown) | undefined;
   compact?: boolean | undefined;
 }) {
   const Icon = { loading: Loader2, empty: Inbox, error: AlertTriangle, "not-connected": PlugZap }[kind];
@@ -64,7 +64,7 @@ export function QueryState({
   isLoading: boolean;
   error: unknown;
   isEmpty: boolean;
-  onRetry?: () => void | undefined;
+  onRetry?: (() => unknown) | undefined;
   compact?: boolean | undefined;
 }) {
   if (isLoading) return <StateBlock kind="loading" compact={compact} />;
