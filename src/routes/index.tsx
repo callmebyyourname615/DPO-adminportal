@@ -6,7 +6,8 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 import { PageHeader } from "@/components/admin/PageHeader";
 import { QueryState } from "@/components/admin/StateBlock";
 import { StatusBadge } from "@/components/admin/StatusBadge";
-import { getApiBaseUrl } from "@/lib/api/client";
+import { getApiBaseUrl, isMockMode } from "@/lib/api/client";
+import { MockBadge } from "@/components/admin/MockBadge";
 import { services, statsService } from "@/lib/api/services";
 import { formatDate } from "@/lib/i18n";
 import { documentCategories } from "@/lib/resources";
@@ -67,7 +68,7 @@ function Dashboard() {
 
   return (
     <div className="flex flex-col gap-[var(--dashboard-gap)]">
-      <PageHeader title="แดชบอร์ด" description="แสดงเฉพาะค่าที่ได้จาก API จริง ไม่มีการคำนวณหรือสร้างตัวเลขสมมติ" />
+      <PageHeader title="แดชบอร์ด" description={isMockMode() ? "โหมดข้อมูลตัวอย่าง: KPI และกราฟคำนวณจากข้อมูลตัวอย่างชุดเดียวกับหน้ารายการ" : "แสดงเฉพาะค่าที่ได้จาก API จริง ไม่มีการคำนวณหรือสร้างตัวเลขสมมติ"} />
 
       <Section
         icon={<Newspaper className="size-4" />}
@@ -157,7 +158,7 @@ function Dashboard() {
         </Panel>
       </div>
 
-      <Section icon={<PlugZap className="size-4" />} title="สถานะการเชื่อมต่อ" metrics={<StatusBadge status={base ? "connected" : "not_connected"} />} />
+      <Section icon={<PlugZap className="size-4" />} title="สถานะการเชื่อมต่อ" metrics={isMockMode() ? <MockBadge /> : <StatusBadge status={base ? "connected" : "not_connected"} />} />
       <div className="grid gap-[var(--dashboard-gap)] md:grid-cols-3">
         {[
           { label: "สถิติ (/api/admin/stats)", q: stats },
@@ -166,12 +167,12 @@ function Dashboard() {
         ].map(({ label, q }) => (
           <Panel key={label} title={label}>
             <p className="text-sm">
-              {q.isLoading ? "กำลังตรวจสอบ…" : q.error ? <span className="text-warning">{q.error.message === "API_NOT_CONNECTED" ? "ยังไม่ได้เชื่อมต่อ API" : `ผิดพลาด: ${q.error.message}`}</span> : <span className="text-healthy">ตอบกลับสำเร็จ</span>}
+              {q.isLoading ? "กำลังตรวจสอบ…" : q.error ? <span className="text-warning">{q.error.message === "API_NOT_CONNECTED" ? "ยังไม่ได้เชื่อมต่อ API" : `ผิดพลาด: ${q.error.message}`}</span> : <span className="text-healthy">{isMockMode() ? "ตอบกลับจาก mock service (ไม่ใช่ API จริง)" : "ตอบกลับสำเร็จ"}</span>}
             </p>
           </Panel>
         ))}
       </div>
-      <p className="flex items-center gap-2 text-xs text-muted-foreground"><Inbox className="size-3.5" aria-hidden />Base URL: {base ?? "ยังไม่ได้ตั้งค่า"}</p>
+      <p className="flex items-center gap-2 text-xs text-muted-foreground"><Inbox className="size-3.5" aria-hidden />โหมดข้อมูล: {isMockMode() ? "mock (ข้อมูลตัวอย่าง)" : "api"} · Base URL: {base ?? "ยังไม่ได้ตั้งค่า"}</p>
     </div>
   );
 }

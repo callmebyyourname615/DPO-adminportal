@@ -17,3 +17,16 @@ describe("rules", () => {
     await expect(apiRequest("/api/admin/news")).rejects.toBeInstanceOf(ApiNotConnectedError);
   });
 });
+
+import { computeStats } from "@/lib/mock/store";
+import { buildSeed } from "@/lib/mock/seed";
+describe("mock data", () => {
+  it("dashboard KPIs come from the same rows as the lists", () => {
+    const db = buildSeed();
+    const s = computeStats(db);
+    expect(s.newsTotal).toBe(db.news.length);
+    expect(s.newsByMonth.reduce((a, m) => a + m.published + m.draft, 0)).toBe(db.news.length);
+    expect(s.documentsByCategory.reduce((a, c) => a + c.count, 0)).toBe(db.documents.length);
+    expect(s.inquiriesNew).toBe(db.inquiries.filter((i) => i.status === "new").length);
+  });
+});

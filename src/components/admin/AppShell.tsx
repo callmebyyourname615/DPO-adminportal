@@ -18,7 +18,8 @@ import {
 import { useState, type ReactNode } from "react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { isApiConfigured } from "@/lib/api/client";
+import { isApiConfigured, isMockMode } from "@/lib/api/client";
+import { MockBadge } from "./MockBadge";
 import { t, type I18nKey } from "@/lib/i18n";
 
 const authEnabled = import.meta.env["VITE_DPO_AUTH_ENABLED"] === "true";
@@ -99,6 +100,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const connected = isApiConfigured();
+  const mock = isMockMode();
   const current = groups.flatMap((g) => g.items).find((i) =>
     i.exact ? pathname === i.to : pathname.startsWith(i.to),
   );
@@ -137,19 +139,25 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Button>
           <p className="truncate text-lg font-semibold">{current ? t(current.key) : t("appName")}</p>
           <div className="ml-auto flex items-center gap-3">
-            <span
+            {mock ? <MockBadge /> : <span
               className={`hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium sm:inline-flex ${
                 connected ? "bg-healthy-bg text-healthy" : "bg-warning-bg text-warning"
               }`}
             >
               <PlugZap className="size-3.5" aria-hidden />
               {connected ? "ตั้งค่า API แล้ว" : t("notConnected")}
-            </span>
+            </span>}
             <Button variant="ghost" size="icon" aria-label="การแจ้งเตือน (ยังไม่เชื่อมต่อ)" disabled>
               <Bell className="size-4" />
             </Button>
           </div>
         </header>
+        {mock && (
+          <div role="note" className="border-b border-warning/30 bg-warning-bg px-4 py-2 text-xs text-warning lg:px-6">
+            <strong>Mock Data / ข้อมูลตัวอย่าง</strong> — ข้อมูลทั้งหมดเป็นข้อมูลสมมติเพื่อทดสอบหน้าจอ
+            การเพิ่ม/แก้ไข/ลบเก็บไว้ในหน่วยความจำเท่านั้น และจะรีเซ็ตเมื่อรีเฟรชหน้า ไม่มีการส่งอีเมลหรือข้อความจริง
+          </div>
+        )}
         <main id="main" className="flex-1 p-[var(--dashboard-page-padding)]">
           {children}
         </main>

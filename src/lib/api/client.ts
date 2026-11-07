@@ -24,6 +24,24 @@ export function getApiBaseUrl(): string | null {
   return raw ? raw.replace(/\/+$/, "") : null;
 }
 
+export type DataMode = "mock" | "api";
+
+/** VITE_DATA_MODE=mock|api. Unset: "api" when a base URL exists (never hide real data), else "mock". */
+export function getDataMode(): DataMode {
+  const raw = (import.meta.env["VITE_DATA_MODE"] as string | undefined)?.trim().toLowerCase();
+  if (raw === "mock" || raw === "api") return raw;
+  return getApiBaseUrl() ? "api" : "mock";
+}
+
+export function isMockMode(): boolean {
+  return getDataMode() === "mock";
+}
+
+/** True when reads/writes can run (mock store or configured API). */
+export function canUseData(): boolean {
+  return isMockMode() || isApiConfigured();
+}
+
 export function isApiConfigured(): boolean {
   return getApiBaseUrl() !== null;
 }

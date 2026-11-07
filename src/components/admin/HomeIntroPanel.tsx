@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { isApiConfigured } from "@/lib/api/client";
+import { canUseData } from "@/lib/api/client";
 import { homeIntroService } from "@/lib/api/services";
 import { t } from "@/lib/i18n";
 import { FieldInput, validateFields, type Values } from "./FormFields";
@@ -47,7 +47,7 @@ export function HomeIntroPanel() {
             <FieldInput key={f.name} field={f} value={v[f.name]} values={v} error={errors[f.name]} onChange={(x) => setV((s) => ({ ...s, [f.name]: x }))} />
           ))}
           <div className="md:col-span-2 flex justify-end">
-            <Button type="submit" disabled={!isApiConfigured() || m.isPending}>{t("save")}</Button>
+            <Button type="submit" disabled={!canUseData() || m.isPending}>{t("save")}</Button>
           </div>
         </form>
         <aside className="rounded-md bg-muted p-4 xl:col-span-5" aria-label={t("preview")}>

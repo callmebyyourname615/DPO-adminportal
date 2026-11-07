@@ -4,6 +4,11 @@ Status: **none of these are connected yet.** The frontend calls them through `sr
 only when `VITE_DPO_API_BASE_URL` is set. All are proposals — confirm request/response shapes,
 auth method and upload flow before going live. Types live in `src/lib/api/types.ts`.
 
+## Mock mode
+`VITE_DATA_MODE=mock` swaps every service for `src/lib/mock/store.ts`, an in-memory implementation of
+the same proposed contract (pagination, filters, 404/409 errors, PATCH semantics). Seed data is in
+`src/lib/mock/seed.ts`. Changes reset on page refresh. Search for `__error` to test the error state.
+
 ## Public (website)
 | Method | Endpoint |
 |---|---|

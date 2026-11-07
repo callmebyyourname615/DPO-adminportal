@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { ApiNotConnectedError, isApiConfigured } from "@/lib/api/client";
+import { ApiNotConnectedError, canUseData } from "@/lib/api/client";
 import { services, type CrudService } from "@/lib/api/services";
 import { formatDate, t } from "@/lib/i18n";
 import { resources, type FieldDef } from "@/lib/resources";
@@ -29,7 +29,7 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: str
   const isNew = id === "new";
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const connected = isApiConfigured();
+  const connected = canUseData();
   const listTo = def.basePath as "/news";
 
   const item = useQuery({
