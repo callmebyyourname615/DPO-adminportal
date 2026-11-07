@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ResourceList } from "@/components/admin/ResourceList";
+import { HomeIntroPanel } from "@/components/admin/HomeIntroPanel";
 import { parseListSearch } from "@/lib/list-search";
 
 export const Route = createFileRoute("/home/")({
@@ -17,5 +18,5 @@ export const Route = createFileRoute("/home/")({
 
 function Page() {
   const search = Route.useSearch();
-  return <ResourceList resourceKey="banners" search={search} />;
+  return <ResourceList resourceKey="banners" search={search} extra={<HomeIntroPanel />} />;
 }

@@ -10,33 +10,219 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DocumentsIndexRouteImport } from './routes/documents.index'
+import { Route as DocumentsIdRouteImport } from './routes/documents.$id'
+import { Route as FaqsIndexRouteImport } from './routes/faqs.index'
+import { Route as FaqsIdRouteImport } from './routes/faqs.$id'
+import { Route as HomeIndexRouteImport } from './routes/home.index'
+import { Route as HomeIdRouteImport } from './routes/home.$id'
+import { Route as InquiriesIndexRouteImport } from './routes/inquiries.index'
+import { Route as InquiriesIdRouteImport } from './routes/inquiries.$id'
+import { Route as NewsIndexRouteImport } from './routes/news.index'
+import { Route as NewsIdRouteImport } from './routes/news.$id'
+import { Route as PagesIndexRouteImport } from './routes/pages.index'
+import { Route as PagesIdRouteImport } from './routes/pages.$id'
+import { Route as PartnersIndexRouteImport } from './routes/partners.index'
+import { Route as PartnersIdRouteImport } from './routes/partners.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocumentsIndexRoute = DocumentsIndexRouteImport.update({
+  id: '/documents/',
+  path: '/documents/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentsIdRoute = DocumentsIdRouteImport.update({
+  id: '/documents/$id',
+  path: '/documents/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqsIndexRoute = FaqsIndexRouteImport.update({
+  id: '/faqs/',
+  path: '/faqs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqsIdRoute = FaqsIdRouteImport.update({
+  id: '/faqs/$id',
+  path: '/faqs/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeIndexRoute = HomeIndexRouteImport.update({
+  id: '/home/',
+  path: '/home/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeIdRoute = HomeIdRouteImport.update({
+  id: '/home/$id',
+  path: '/home/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InquiriesIndexRoute = InquiriesIndexRouteImport.update({
+  id: '/inquiries/',
+  path: '/inquiries/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InquiriesIdRoute = InquiriesIdRouteImport.update({
+  id: '/inquiries/$id',
+  path: '/inquiries/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsIndexRoute = NewsIndexRouteImport.update({
+  id: '/news/',
+  path: '/news/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsIdRoute = NewsIdRouteImport.update({
+  id: '/news/$id',
+  path: '/news/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PagesIndexRoute = PagesIndexRouteImport.update({
+  id: '/pages/',
+  path: '/pages/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PagesIdRoute = PagesIdRouteImport.update({
+  id: '/pages/$id',
+  path: '/pages/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartnersIndexRoute = PartnersIndexRouteImport.update({
+  id: '/partners/',
+  path: '/partners/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartnersIdRoute = PartnersIdRouteImport.update({
+  id: '/partners/$id',
+  path: '/partners/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/documents/$id': typeof DocumentsIdRoute
+  '/faqs/$id': typeof FaqsIdRoute
+  '/home/$id': typeof HomeIdRoute
+  '/inquiries/$id': typeof InquiriesIdRoute
+  '/news/$id': typeof NewsIdRoute
+  '/pages/$id': typeof PagesIdRoute
+  '/partners/$id': typeof PartnersIdRoute
+  '/documents/': typeof DocumentsIndexRoute
+  '/faqs/': typeof FaqsIndexRoute
+  '/home/': typeof HomeIndexRoute
+  '/inquiries/': typeof InquiriesIndexRoute
+  '/news/': typeof NewsIndexRoute
+  '/pages/': typeof PagesIndexRoute
+  '/partners/': typeof PartnersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/documents/$id': typeof DocumentsIdRoute
+  '/faqs/$id': typeof FaqsIdRoute
+  '/home/$id': typeof HomeIdRoute
+  '/inquiries/$id': typeof InquiriesIdRoute
+  '/news/$id': typeof NewsIdRoute
+  '/pages/$id': typeof PagesIdRoute
+  '/partners/$id': typeof PartnersIdRoute
+  '/documents': typeof DocumentsIndexRoute
+  '/faqs': typeof FaqsIndexRoute
+  '/home': typeof HomeIndexRoute
+  '/inquiries': typeof InquiriesIndexRoute
+  '/news': typeof NewsIndexRoute
+  '/pages': typeof PagesIndexRoute
+  '/partners': typeof PartnersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/documents/$id': typeof DocumentsIdRoute
+  '/faqs/$id': typeof FaqsIdRoute
+  '/home/$id': typeof HomeIdRoute
+  '/inquiries/$id': typeof InquiriesIdRoute
+  '/news/$id': typeof NewsIdRoute
+  '/pages/$id': typeof PagesIdRoute
+  '/partners/$id': typeof PartnersIdRoute
+  '/documents/': typeof DocumentsIndexRoute
+  '/faqs/': typeof FaqsIndexRoute
+  '/home/': typeof HomeIndexRoute
+  '/inquiries/': typeof InquiriesIndexRoute
+  '/news/': typeof NewsIndexRoute
+  '/pages/': typeof PagesIndexRoute
+  '/partners/': typeof PartnersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/documents/$id'
+    | '/faqs/$id'
+    | '/home/$id'
+    | '/inquiries/$id'
+    | '/news/$id'
+    | '/pages/$id'
+    | '/partners/$id'
+    | '/documents/'
+    | '/faqs/'
+    | '/home/'
+    | '/inquiries/'
+    | '/news/'
+    | '/pages/'
+    | '/partners/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/documents/$id'
+    | '/faqs/$id'
+    | '/home/$id'
+    | '/inquiries/$id'
+    | '/news/$id'
+    | '/pages/$id'
+    | '/partners/$id'
+    | '/documents'
+    | '/faqs'
+    | '/home'
+    | '/inquiries'
+    | '/news'
+    | '/pages'
+    | '/partners'
+  id:
+    | '__root__'
+    | '/'
+    | '/documents/$id'
+    | '/faqs/$id'
+    | '/home/$id'
+    | '/inquiries/$id'
+    | '/news/$id'
+    | '/pages/$id'
+    | '/partners/$id'
+    | '/documents/'
+    | '/faqs/'
+    | '/home/'
+    | '/inquiries/'
+    | '/news/'
+    | '/pages/'
+    | '/partners/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DocumentsIdRoute: typeof DocumentsIdRoute
+  FaqsIdRoute: typeof FaqsIdRoute
+  HomeIdRoute: typeof HomeIdRoute
+  InquiriesIdRoute: typeof InquiriesIdRoute
+  NewsIdRoute: typeof NewsIdRoute
+  PagesIdRoute: typeof PagesIdRoute
+  PartnersIdRoute: typeof PartnersIdRoute
+  DocumentsIndexRoute: typeof DocumentsIndexRoute
+  FaqsIndexRoute: typeof FaqsIndexRoute
+  HomeIndexRoute: typeof HomeIndexRoute
+  InquiriesIndexRoute: typeof InquiriesIndexRoute
+  NewsIndexRoute: typeof NewsIndexRoute
+  PagesIndexRoute: typeof PagesIndexRoute
+  PartnersIndexRoute: typeof PartnersIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +234,123 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/documents/': {
+      id: '/documents/'
+      path: '/documents'
+      fullPath: '/documents/'
+      preLoaderRoute: typeof DocumentsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documents/$id': {
+      id: '/documents/$id'
+      path: '/documents/$id'
+      fullPath: '/documents/$id'
+      preLoaderRoute: typeof DocumentsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faqs/': {
+      id: '/faqs/'
+      path: '/faqs'
+      fullPath: '/faqs/'
+      preLoaderRoute: typeof FaqsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faqs/$id': {
+      id: '/faqs/$id'
+      path: '/faqs/$id'
+      fullPath: '/faqs/$id'
+      preLoaderRoute: typeof FaqsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home/': {
+      id: '/home/'
+      path: '/home'
+      fullPath: '/home/'
+      preLoaderRoute: typeof HomeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home/$id': {
+      id: '/home/$id'
+      path: '/home/$id'
+      fullPath: '/home/$id'
+      preLoaderRoute: typeof HomeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inquiries/': {
+      id: '/inquiries/'
+      path: '/inquiries'
+      fullPath: '/inquiries/'
+      preLoaderRoute: typeof InquiriesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inquiries/$id': {
+      id: '/inquiries/$id'
+      path: '/inquiries/$id'
+      fullPath: '/inquiries/$id'
+      preLoaderRoute: typeof InquiriesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news/': {
+      id: '/news/'
+      path: '/news'
+      fullPath: '/news/'
+      preLoaderRoute: typeof NewsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news/$id': {
+      id: '/news/$id'
+      path: '/news/$id'
+      fullPath: '/news/$id'
+      preLoaderRoute: typeof NewsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pages/': {
+      id: '/pages/'
+      path: '/pages'
+      fullPath: '/pages/'
+      preLoaderRoute: typeof PagesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pages/$id': {
+      id: '/pages/$id'
+      path: '/pages/$id'
+      fullPath: '/pages/$id'
+      preLoaderRoute: typeof PagesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/partners/': {
+      id: '/partners/'
+      path: '/partners'
+      fullPath: '/partners/'
+      preLoaderRoute: typeof PartnersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/partners/$id': {
+      id: '/partners/$id'
+      path: '/partners/$id'
+      fullPath: '/partners/$id'
+      preLoaderRoute: typeof PartnersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DocumentsIdRoute: DocumentsIdRoute,
+  FaqsIdRoute: FaqsIdRoute,
+  HomeIdRoute: HomeIdRoute,
+  InquiriesIdRoute: InquiriesIdRoute,
+  NewsIdRoute: NewsIdRoute,
+  PagesIdRoute: PagesIdRoute,
+  PartnersIdRoute: PartnersIdRoute,
+  DocumentsIndexRoute: DocumentsIndexRoute,
+  FaqsIndexRoute: FaqsIndexRoute,
+  HomeIndexRoute: HomeIndexRoute,
+  InquiriesIndexRoute: InquiriesIndexRoute,
+  NewsIndexRoute: NewsIndexRoute,
+  PagesIndexRoute: PagesIndexRoute,
+  PartnersIndexRoute: PartnersIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
