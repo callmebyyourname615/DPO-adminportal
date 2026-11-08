@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ResourceList } from "@/components/admin/ResourceList";
+import { DocumentsList } from "@/components/admin/DocumentsList";
 import { parseListSearch } from "@/lib/list-search";
 
 export const Route = createFileRoute("/documents/")({
   validateSearch: parseListSearch,
   head: () => ({
     meta: [
-      { title: "จัดการเอกสาร — DPO Admin" },
-      { name: "description", content: "จัดการเอกสาร ในระบบจัดการเว็บไซต์สำนักงานปกป้องเงินฝาก" },
-      { property: "og:title", content: "จัดการเอกสาร — DPO Admin" },
-      { property: "og:description", content: "จัดการเอกสาร ในระบบจัดการเว็บไซต์ DPO" },
+      { title: "ຈັດການເອກະສານ — DPO Admin" },
+      { name: "description", content: "ຈັດການເອກະສານຢູ່ໃນລະບົບການຄຸ້ມຄອງເວັບໄຊທ໌ຂອງຫ້ອງການປົກປ້ອງເງິນຝາກ." },
+      { property: "og:title", content: "ຈັດການເອກະສານ — DPO Admin" },
+      { property: "og:description", content: "ຈັດການເອກະສານໃນລະບົບການຄຸ້ມຄອງເວັບໄຊທ໌ DPO" },
     ],
   }),
   component: Page,
@@ -17,5 +17,5 @@ export const Route = createFileRoute("/documents/")({
 
 function Page() {
   const search = Route.useSearch();
-  return <ResourceList resourceKey="documents" search={search} />;
+  return <DocumentsList search={search} />;
 }

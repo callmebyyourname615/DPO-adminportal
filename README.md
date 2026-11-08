@@ -1,3 +1,5 @@
+> **Current integration:** The portal now uses the real DPO API only. Set `VITE_DPO_API_BASE_URL` to the API origin (for example `http://localhost:3000`), start the API and sign in with an admin account. The legacy mock-mode instructions below are obsolete. See [API endpoints](docs/BACKEND_ENDPOINTS.md).
+
 # DPO Content Hub
 
 # Lovable prompt — DPO Admin Portal

@@ -1,28 +1,27 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  Bell,
   FileText,
   FolderOpen,
   HelpCircle,
   Home,
   Inbox,
   LayoutDashboard,
+  LogOut,
   Menu,
   Newspaper,
   PanelsTopLeft,
-  PlugZap,
   Settings,
   Shield,
   Building2,
+  UserRound,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { NotificationBell } from "./NotificationBell";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { isApiConfigured, isMockMode } from "@/lib/api/client";
-import { MockBadge } from "./MockBadge";
 import { t, type I18nKey } from "@/lib/i18n";
 
-const authEnabled = import.meta.env["VITE_DPO_AUTH_ENABLED"] === "true";
+
 
 type Item = { to: string; key: I18nKey; icon: typeof Home; exact?: boolean | undefined };
 const groups: { label: I18nKey; items: Item[] }[] = [
@@ -46,14 +45,12 @@ const groups: { label: I18nKey; items: Item[] }[] = [
       { to: "/settings", key: "settings", icon: Settings },
     ],
   },
-  ...(authEnabled
-    ? [{ label: "groupAdmin" as I18nKey, items: [{ to: "/users", key: "users" as I18nKey, icon: Shield }] }]
-    : []),
+  { label: "groupAdmin", items: [{ to: "/users", key: "users", icon: Shield }] },
 ];
 
 function Nav({ onNavigate }: { onNavigate?: () => void | undefined }) {
   return (
-    <nav aria-label="เมนูหลัก" className="flex flex-col gap-4 px-3 py-4">
+    <nav aria-label="ເມນູຫຼັກ" className="flex flex-col gap-4 px-3 py-4">
       {groups.map((g) => (
         <div key={g.label}>
           {g.label !== "dashboard" && (
@@ -85,9 +82,7 @@ function Nav({ onNavigate }: { onNavigate?: () => void | undefined }) {
 function Brand() {
   return (
     <div className="flex h-[var(--header-height)] items-center gap-3 border-b border-sidebar-border px-5">
-      <span className="grid size-9 place-items-center rounded-md bg-dpo-cyan font-bold text-sidebar-primary-foreground">
-        D
-      </span>
+      <img src="/dpo-logo.png" alt="ຕາສັນຍາລັກ DPO" className="size-10 shrink-0 object-contain" />
       <div className="leading-tight">
         <p className="font-semibold text-sidebar-foreground">{t("appName")}</p>
         <p className="text-[11px] text-sidebar-muted">{t("appSubtitle")}</p>
@@ -96,11 +91,13 @@ function Brand() {
   );
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
+function LogoutButton({ userName, onLogout }: { userName: string; onLogout: () => void }) {
+  return <div className="mt-auto border-t border-sidebar-border p-3"><p className="mb-2 truncate px-1 text-xs text-sidebar-muted" title={userName}>{userName}</p><Button type="button" variant="destructive" className="h-10 w-full justify-start" onClick={onLogout}><LogOut aria-hidden />ອອກຈາກລະບົບ</Button></div>;
+}
+
+export function AppShell({ children, userName, userRole, onLogout }: { children: ReactNode; userName: string; userRole: string; onLogout: () => void }) {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const connected = isApiConfigured();
-  const mock = isMockMode();
   const current = groups.flatMap((g) => g.items).find((i) =>
     i.exact ? pathname === i.to : pathname.startsWith(i.to),
   );
@@ -111,18 +108,20 @@ export function AppShell({ children }: { children: ReactNode }) {
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-card focus:px-3 focus:py-2"
       >
-        ข้ามไปยังเนื้อหา
+        ຂ້າມໄປຫາເນື້ອຫາ
       </a>
       <aside className="sticky top-0 hidden h-screen w-[var(--sidebar-width)] shrink-0 flex-col overflow-y-auto bg-sidebar lg:flex">
         <Brand />
         <Nav />
+        <LogoutButton userName={userName} onLogout={onLogout} />
       </aside>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-[var(--sidebar-width)] border-sidebar-border bg-sidebar p-0">
-          <SheetTitle className="sr-only">เมนู</SheetTitle>
+        <SheetContent side="left" className="flex w-[var(--sidebar-width)] flex-col overflow-y-auto border-sidebar-border bg-sidebar p-0">
+          <SheetTitle className="sr-only">ເມນູ</SheetTitle>
           <Brand />
           <Nav onNavigate={() => setOpen(false)} />
+          <LogoutButton userName={userName} onLogout={onLogout} />
         </SheetContent>
       </Sheet>
 
@@ -132,32 +131,23 @@ export function AppShell({ children }: { children: ReactNode }) {
             variant="ghost"
             size="icon"
             className="lg:hidden"
-            aria-label="เปิดเมนู"
+            aria-label="ເປີດເມນູ"
             onClick={() => setOpen(true)}
           >
             <Menu className="size-5" />
           </Button>
           <p className="truncate text-lg font-semibold">{current ? t(current.key) : t("appName")}</p>
           <div className="ml-auto flex items-center gap-3">
-            {mock ? <MockBadge /> : <span
-              className={`hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium sm:inline-flex ${
-                connected ? "bg-healthy-bg text-healthy" : "bg-warning-bg text-warning"
-              }`}
-            >
-              <PlugZap className="size-3.5" aria-hidden />
-              {connected ? "ตั้งค่า API แล้ว" : t("notConnected")}
-            </span>}
-            <Button variant="ghost" size="icon" aria-label="การแจ้งเตือน (ยังไม่เชื่อมต่อ)" disabled>
-              <Bell className="size-4" />
-            </Button>
+            <NotificationBell />
+            <div className="flex min-w-0 items-center gap-2 border-l border-border pl-3" aria-label={`ຜູ້ໃຊ້: ${userName}`}>
+              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><UserRound className="size-5" /></span>
+              <div className="hidden min-w-0 leading-tight md:block">
+                <p className="max-w-40 truncate text-sm font-semibold text-foreground" title={userName}>{userName}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{{ admin: "ຜູ້ດູແລລະບົບ", editor: "ຜູ້ແກ້ໄຂ", viewer: "ຜູ້ເບິ່ງ" }[userRole] ?? userRole}</p>
+              </div>
+            </div>
           </div>
         </header>
-        {mock && (
-          <div role="note" className="border-b border-warning/30 bg-warning-bg px-4 py-2 text-xs text-warning lg:px-6">
-            <strong>Mock Data / ข้อมูลตัวอย่าง</strong> — ข้อมูลทั้งหมดเป็นข้อมูลสมมติเพื่อทดสอบหน้าจอ
-            การเพิ่ม/แก้ไข/ลบเก็บไว้ในหน่วยความจำเท่านั้น และจะรีเซ็ตเมื่อรีเฟรชหน้า ไม่มีการส่งอีเมลหรือข้อความจริง
-          </div>
-        )}
         <main id="main" className="flex-1 p-[var(--dashboard-page-padding)]">
           {children}
         </main>

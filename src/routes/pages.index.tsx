@@ -6,10 +6,10 @@ export const Route = createFileRoute("/pages/")({
   validateSearch: parseListSearch,
   head: () => ({
     meta: [
-      { title: "หน้าเนื้อหา — DPO Admin" },
-      { name: "description", content: "หน้าเนื้อหา ในระบบจัดการเว็บไซต์สำนักงานปกป้องเงินฝาก" },
-      { property: "og:title", content: "หน้าเนื้อหา — DPO Admin" },
-      { property: "og:description", content: "หน้าเนื้อหา ในระบบจัดการเว็บไซต์ DPO" },
+      { title: "ຫນ້າເນື້ອຫາ — DPO Admin" },
+      { name: "description", content: "ຫນ້າເນື້ອຫາຢູ່ໃນລະບົບການຄຸ້ມຄອງເວັບໄຊທ໌ຂອງຫ້ອງການປົກປ້ອງເງິນຝາກ" },
+      { property: "og:title", content: "ຫນ້າເນື້ອຫາ — DPO Admin" },
+      { property: "og:description", content: "ຫນ້າເນື້ອຫາໃນລະບົບການຄຸ້ມຄອງເວັບໄຊທ໌ DPO" },
     ],
   }),
   component: Page,

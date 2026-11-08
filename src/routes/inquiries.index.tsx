@@ -1,17 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ResourceList } from "@/components/admin/ResourceList";
-import { MockInquirySimulator } from "@/components/admin/MockInquirySimulator";
-import { isMockMode } from "@/lib/api/client";
 import { parseListSearch } from "@/lib/list-search";
 
 export const Route = createFileRoute("/inquiries/")({
   validateSearch: parseListSearch,
   head: () => ({
     meta: [
-      { title: "ข้อความติดต่อ — DPO Admin" },
-      { name: "description", content: "ข้อความติดต่อ ในระบบจัดการเว็บไซต์สำนักงานปกป้องเงินฝาก" },
-      { property: "og:title", content: "ข้อความติดต่อ — DPO Admin" },
-      { property: "og:description", content: "ข้อความติดต่อ ในระบบจัดการเว็บไซต์ DPO" },
+      { title: "ຂໍ້ຄວາມຕິດຕໍ່ — DPO Admin" },
+      { name: "description", content: "ຂໍ້ຄວາມຕິດຕໍ່ໃນລະບົບການຄຸ້ມຄອງເວັບໄຊທ໌ຂອງ Deposit Protection Office" },
+      { property: "og:title", content: "ຂໍ້ຄວາມຕິດຕໍ່ — DPO Admin" },
+      { property: "og:description", content: "ຂໍ້ຄວາມຕິດຕໍ່ໃນລະບົບການຄຸ້ມຄອງເວັບໄຊທ໌ DPO" },
     ],
   }),
   component: Page,
@@ -19,5 +17,5 @@ export const Route = createFileRoute("/inquiries/")({
 
 function Page() {
   const search = Route.useSearch();
-  return <ResourceList resourceKey="inquiries" search={search} extra={isMockMode() ? <MockInquirySimulator /> : undefined} />;
+  return <ResourceList resourceKey="inquiries" search={search} />;
 }

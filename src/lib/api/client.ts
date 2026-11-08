@@ -24,22 +24,8 @@ export function getApiBaseUrl(): string | null {
   return raw ? raw.replace(/\/+$/, "") : null;
 }
 
-export type DataMode = "mock" | "api";
-
-/** VITE_DATA_MODE=mock|api. Unset: "api" when a base URL exists (never hide real data), else "mock". */
-export function getDataMode(): DataMode {
-  const raw = (import.meta.env["VITE_DATA_MODE"] as string | undefined)?.trim().toLowerCase();
-  if (raw === "mock" || raw === "api") return raw;
-  return getApiBaseUrl() ? "api" : "mock";
-}
-
-export function isMockMode(): boolean {
-  return getDataMode() === "mock";
-}
-
-/** True when reads/writes can run (mock store or configured API). */
 export function canUseData(): boolean {
-  return isMockMode() || isApiConfigured();
+  return isApiConfigured();
 }
 
 export function isApiConfigured(): boolean {
@@ -56,12 +42,23 @@ export function buildUrl(base: string, path: string, query?: Record<string, unkn
   return url.toString();
 }
 
-/**
- * Auth headers are intentionally not guessed. Wire the real auth (session cookie,
- * bearer token, ...) here once the backend contract is confirmed.
- */
+export const SESSION_KEY = "dpo_admin_token";
+
+export function getSessionToken(): string | null {
+  return typeof window === "undefined" ? null : sessionStorage.getItem(SESSION_KEY) || window.localStorage.getItem(SESSION_KEY);
+}
+export function clearSession(): void {
+  sessionStorage.removeItem(SESSION_KEY);
+  window.localStorage.removeItem(SESSION_KEY);
+}
+export function saveSession(token: string, remember: boolean): void {
+  clearSession();
+  (remember ? window.localStorage : sessionStorage).setItem(SESSION_KEY, token);
+}
+
 function getAuthHeaders(): Record<string, string> {
-  return {};
+  const token = getSessionToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 export interface RequestOptions {
@@ -93,7 +90,11 @@ export async function apiRequest<T>(path: string, opts: RequestOptions = {}): Pr
     } catch {
       /* non-JSON error body */
     }
-    throw new ApiError(res.status, msg);
+    if (res.status === 401 && typeof window !== "undefined" && !path.startsWith("/api/auth/login")) {
+      clearSession();
+      window.dispatchEvent(new Event("dpo-session-expired"));
+    }
+    throw new ApiError(res.status, Array.isArray(msg) ? msg.join(", ") : msg);
   }
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;

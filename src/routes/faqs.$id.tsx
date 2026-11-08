@@ -4,10 +4,10 @@ import { ResourceForm } from "@/components/admin/ResourceForm";
 export const Route = createFileRoute("/faqs/$id")({
   head: () => ({
     meta: [
-      { title: "จัดการ FAQ · รายละเอียด — DPO Admin" },
-      { name: "description", content: "เพิ่มหรือแก้ไข จัดการ FAQ" },
-      { property: "og:title", content: "จัดการ FAQ · รายละเอียด — DPO Admin" },
-      { property: "og:description", content: "เพิ่มหรือแก้ไข จัดการ FAQ" },
+      { title: "ຈັດການ FAQ · ລາຍລະອຽດ — DPO Admin" },
+      { name: "description", content: "ເພີ່ມ ຫຼືແກ້ໄຂການຈັດການ FAQ" },
+      { property: "og:title", content: "ຈັດການ FAQ · ລາຍລະອຽດ — DPO Admin" },
+      { property: "og:description", content: "ເພີ່ມ ຫຼືແກ້ໄຂການຈັດການ FAQ" },
     ],
   }),
   component: Page,

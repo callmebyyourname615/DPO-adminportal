@@ -4,10 +4,10 @@ import { ResourceForm } from "@/components/admin/ResourceForm";
 export const Route = createFileRoute("/home/$id")({
   head: () => ({
     meta: [
-      { title: "จัดการหน้าแรก · รายละเอียด — DPO Admin" },
-      { name: "description", content: "เพิ่มหรือแก้ไข จัดการหน้าแรก" },
-      { property: "og:title", content: "จัดการหน้าแรก · รายละเอียด — DPO Admin" },
-      { property: "og:description", content: "เพิ่มหรือแก้ไข จัดการหน้าแรก" },
+      { title: "ຈັດການຫນ້າທໍາອິດ · ລາຍລະອຽດ — DPO Admin" },
+      { name: "description", content: "ເພີ່ມ ຫຼືແກ້ໄຂການຈັດການໜ້າຫຼັກ" },
+      { property: "og:title", content: "ຈັດການຫນ້າທໍາອິດ · ລາຍລະອຽດ — DPO Admin" },
+      { property: "og:description", content: "ເພີ່ມ ຫຼືແກ້ໄຂການຈັດການໜ້າຫຼັກ" },
     ],
   }),
   component: Page,

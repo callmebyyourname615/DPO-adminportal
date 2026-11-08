@@ -1,13 +1,6 @@
-# DPO Admin — endpoints still required from backend
+# DPO Admin — API integration
 
-Status: **none of these are connected yet.** The frontend calls them through `src/lib/api/services.ts`
-only when `VITE_DPO_API_BASE_URL` is set. All are proposals — confirm request/response shapes,
-auth method and upload flow before going live. Types live in `src/lib/api/types.ts`.
-
-## Mock mode
-`VITE_DATA_MODE=mock` swaps every service for `src/lib/mock/store.ts`, an in-memory implementation of
-the same proposed contract (pagination, filters, 404/409 errors, PATCH semantics). Seed data is in
-`src/lib/mock/seed.ts`. Changes reset on page refresh. Search for `__error` to test the error state.
+The portal uses the DPO NestJS backend at `VITE_DPO_API_BASE_URL` (origin only). Admin requests use a bearer token from `/api/auth/login`; the token is kept in session storage, or local storage when remember me is selected, and expires after one hour. The backend enforces roles. There is no mock data fallback.
 
 ## Public (website)
 | Method | Endpoint |
@@ -29,11 +22,10 @@ the same proposed contract (pagination, filters, 404/409 errors, PATCH semantics
 | Home | GET/POST /api/admin/home/banners · GET/PATCH/DELETE /:id · GET/PATCH /api/admin/home/intro |
 | Pages | GET/POST /api/admin/pages · GET/PATCH/DELETE /:id · GET /api/admin/pages/slug-check |
 | Settings | GET/PATCH /api/admin/site-settings |
-| Media | GET /api/admin/media · upload (signed URL or multipart — TBD) · DELETE /:id |
-| Users | auth + users/roles API (admin/editor/viewer) — TBD |
+| Media | GET /api/admin/media · POST /api/admin/media/upload (multipart field `file`) · DELETE /:id |
+| Users | GET/POST /api/admin/users · PATCH /api/admin/users/:id (admin only) |
 
 List responses expected as `PaginatedResponse<T>` `{ data, page, limit, total, totalPages }`; dates ISO 8601.
 
-## Not working until backend exists
-Loading/saving any data, file upload & progress, slug uniqueness check, reply to inquiries,
-notifications, user management.
+## Not implemented
+Replying to inquiries by email, notifications, and upload progress reporting.

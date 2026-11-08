@@ -1,9 +1,9 @@
 export function renderErrorPage(): string {
   return `<!doctype html>
-<html lang="en">
+<html lang="lo">
   <head>
     <meta charset="utf-8" />
-    <title>This page didn't load</title>
+    <title>ບໍ່ສາມາດໂຫຼດໜ້ານີ້ໄດ້</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       body { font: 15px/1.5 system-ui, -apple-system, sans-serif; background: #fafafa; color: #111; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 1.5rem; }
@@ -18,11 +18,11 @@ export function renderErrorPage(): string {
   </head>
   <body>
     <div class="card">
-      <h1>This page didn't load</h1>
-      <p>Something went wrong on our end. You can try refreshing or head back home.</p>
+      <h1>ບໍ່ສາມາດໂຫຼດໜ້ານີ້ໄດ້</h1>
+      <p>ມີຂໍ້ຜິດພາດເກີດຂຶ້ນ. ກະລຸນາລອງໃໝ່ ຫຼື ກັບໄປໜ້າທຳອິດ.</p>
       <div class="actions">
-        <button class="primary" onclick="location.reload()">Try again</button>
-        <a class="secondary" href="/">Go home</a>
+        <button class="primary" onclick="location.reload()">ລອງອີກຄັ້ງ</button>
+        <a class="secondary" href="/">ກັບໜ້າທຳອິດ</a>
       </div>
     </div>
   </body>

@@ -35,7 +35,7 @@ export function validateFile(
   maxMb: number,
 ): string | null {
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-  if (!accept.includes(ext)) return `ชนิดไฟล์ไม่รองรับ (รองรับ: ${accept.join(", ")})`;
-  if (file.size > maxMb * 1024 * 1024) return `ไฟล์ใหญ่เกิน ${maxMb} MB`;
+  if (!accept.includes(ext)) return `ປະເພດໄຟລ໌ທີ່ບໍ່ຮອງຮັບ (ສະຫນັບສະຫນູນ: ${accept.join(", ")})`;
+  if (file.size > maxMb * 1024 * 1024) return `ໄຟລ໌ໃຫຍ່ເກີນໄປ. ${maxMb} MB`;
   return null;
 }

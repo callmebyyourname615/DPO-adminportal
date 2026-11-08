@@ -4,10 +4,10 @@ import { ResourceForm } from "@/components/admin/ResourceForm";
 export const Route = createFileRoute("/inquiries/$id")({
   head: () => ({
     meta: [
-      { title: "ข้อความติดต่อ · รายละเอียด — DPO Admin" },
-      { name: "description", content: "เพิ่มหรือแก้ไข ข้อความติดต่อ" },
-      { property: "og:title", content: "ข้อความติดต่อ · รายละเอียด — DPO Admin" },
-      { property: "og:description", content: "เพิ่มหรือแก้ไข ข้อความติดต่อ" },
+      { title: "ຂໍ້ຄວາມຕິດຕໍ່ · ລາຍລະອຽດ — DPO Admin" },
+      { name: "description", content: "ເພີ່ມ ຫຼືແກ້ໄຂຂໍ້ຄວາມຕິດຕໍ່" },
+      { property: "og:title", content: "ຂໍ້ຄວາມຕິດຕໍ່ · ລາຍລະອຽດ — DPO Admin" },
+      { property: "og:description", content: "ເພີ່ມ ຫຼືແກ້ໄຂຂໍ້ຄວາມຕິດຕໍ່" },
     ],
   }),
   component: Page,

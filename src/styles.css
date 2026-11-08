@@ -88,7 +88,7 @@
   --color-expired-bg: var(--status-expired-bg);
   --color-info: var(--status-info);
   --color-info-bg: var(--status-info-bg);
-  --font-sans: "Noto Sans Thai", "Noto Sans Lao", "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Noto Sans Lao", "Open Sans", ui-sans-serif, system-ui, sans-serif;
   --font-numeric: "Open Sans", ui-sans-serif, system-ui, sans-serif;
   --shadow-panel: 0 1px 3px rgb(20 37 70 / 6%);
   --shadow-dropdown: 0 8px 24px rgb(20 37 70 / 14%);
@@ -163,8 +163,8 @@
   --chart-axis: #697589;
 
   /* Layout, typography and detail scale; 1rem = 16px by default. */
-  --font-sans: "Noto Sans Thai", "Noto Sans Lao", "Open Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-lao: "Noto Sans Thai", "Noto Sans Lao", "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Noto Sans Lao", "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-lao: "Noto Sans Lao", "Open Sans", ui-sans-serif, system-ui, sans-serif;
   --font-numeric: "Open Sans", ui-sans-serif, system-ui, sans-serif;
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
@@ -275,3 +275,6 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0ms !important; transition-duration: 0ms !important; }
 }
+
+/* Loading shimmer is a single composited layer per placeholder. */
+.loading-sheen { background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--surface) 65%, transparent), transparent); }

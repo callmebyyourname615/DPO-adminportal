@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Pencil, Plus, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Image, Pencil, Plus, Search } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +59,7 @@ export function ResourceList({
       />
       {extra}
       <section className="panel" aria-label={def.title}>
+        {resourceKey === "banners" && <div className="flex items-center gap-3 border-b border-border px-5 py-4"><span className="grid size-10 place-items-center rounded-lg bg-primary-soft text-primary"><Image className="size-5" aria-hidden /></span><div><h2 className="font-semibold">ປ້າຍໜ້າທຳອິດ</h2><p className="mt-1 text-xs text-muted-foreground">ຈັດການຮູບພາບ ແລະ ລຳດັບການສະແດງ</p></div></div>}
         <form
           role="search"
           className="flex flex-col gap-2 border-b border-border p-3 md:flex-row md:items-center"
@@ -128,14 +129,14 @@ export function ResourceList({
                     <tr key={r["id"]} className="border-t border-border hover:bg-muted/50">
                       {def.columns.map((c) => (
                         <td key={c.key} className={`px-3 py-2.5 align-middle ${c.className ?? ""}`}>
-                          {c.render ? c.render(r) : (r[c.key] ?? "—")}
+                          {resourceKey === "banners" && c.key === "title" ? <div className="flex min-w-0 items-center gap-3"><span className="grid h-14 w-20 shrink-0 place-items-center overflow-hidden rounded-md bg-muted">{r["imageUrl"] ? <img src={String(r["imageUrl"])} alt="" className="size-full object-cover" /> : <Image className="size-5 text-muted-foreground" aria-hidden />}</span><span className="max-w-xs truncate">{r[c.key] ?? "—"}</span></div> : c.render ? c.render(r) : (r[c.key] ?? "—")}
                         </td>
                       ))}
                       <td className="px-3 py-2 text-right">
                         <Button asChild variant="ghost" size="sm">
                           <Link to={detail} params={{ id: String(r["id"]) }}>
                             <Pencil className="size-3.5" />
-                            {def.readOnlyDetail ? "ดูรายละเอียด" : t("edit")}
+                            {def.readOnlyDetail ? "ເບິ່ງລາຍລະອຽດ" : t("edit")}
                           </Link>
                         </Button>
                       </td>
@@ -148,7 +149,7 @@ export function ResourceList({
               <div className="flex items-center justify-between border-t border-border px-3 py-2 text-sm text-muted-foreground">
                 <span className="num">
                   {t("page")} {query.data.page} {t("of")} {Math.max(1, query.data.totalPages)} ·{" "}
-                  {query.data.total} รายการ
+                  {query.data.total} ລາຍການ
                 </span>
                 <div className="flex gap-1">
                   <Button

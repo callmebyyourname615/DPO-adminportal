@@ -1,178 +1,47 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, Inbox, Newspaper, PlugZap } from "lucide-react";
+import { ArrowUpRight, FileText, Inbox, Newspaper, HelpCircle } from "lucide-react";
 import type { ReactNode } from "react";
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { QueryState } from "@/components/admin/StateBlock";
+import { LoadingSkeleton } from "@/components/admin/LoadingSkeleton";
 import { StatusBadge } from "@/components/admin/StatusBadge";
-import { getApiBaseUrl, isMockMode } from "@/lib/api/client";
-import { MockBadge } from "@/components/admin/MockBadge";
+import { DocumentChart, InquiryChart, NewsStatusChart, NewsTimeline } from "@/components/admin/DashboardCharts";
 import { services, statsService } from "@/lib/api/services";
 import { formatDate } from "@/lib/i18n";
-import { documentCategories } from "@/lib/resources";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "แดชบอร์ด — DPO Admin Portal" },
-      { name: "description", content: "ภาพรวมข่าว เอกสาร และข้อความติดต่อของเว็บไซต์สำนักงานปกป้องเงินฝาก" },
-      { property: "og:title", content: "แดชบอร์ด — DPO Admin Portal" },
-      { property: "og:description", content: "ภาพรวมเนื้อหาเว็บไซต์สำนักงานปกป้องเงินฝาก" },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "ພາບລວມ — ລະບົບບໍລິຫານ DPO" }, { name: "description", content: "ພາບລວມຂ່າວ ເອກະສານ ແລະຂໍ້ຄວາມຕິດຕໍ່" }] }),
   component: Dashboard,
 });
 
-function Metric({ label, value }: { label: string; value: number | undefined }) {
-  return (
-    <span className="flex items-baseline gap-1.5 text-xs text-muted-foreground">
-      {label}:
-      <span className="num text-lg font-semibold text-foreground">{value ?? "—"}</span>
-    </span>
-  );
+function Panel({ title, description, action, children, className = "" }: { title: string; description?: string; action?: ReactNode; children: ReactNode; className?: string }) {
+  return <section className={`panel min-w-0 p-4 sm:p-5 ${className}`}><div className="mb-5 flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h2 className="text-base font-semibold text-foreground">{title}</h2>{description && <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>}</div>{action}</div>{children}</section>;
 }
-
-function Section({ icon, title, metrics }: { icon: ReactNode; title: string; metrics: ReactNode }) {
-  return (
-    <div className="panel flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center">
-      <div className="flex items-center gap-3">
-        <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">{icon}</span>
-        <h2 className="font-semibold">{title}</h2>
-      </div>
-      <div className="flex flex-wrap gap-x-5 gap-y-1 sm:ml-auto">{metrics}</div>
-    </div>
-  );
-}
-
-function Panel({ title, children, className = "" }: { title: string; children: ReactNode; className?: string }) {
-  return (
-    <section className={`panel p-[var(--panel-padding)] ${className}`} aria-label={title}>
-      <h3 className="mb-3 text-sm font-medium">{title}</h3>
-      {children}
-    </section>
-  );
-}
-
-const axis = { fontSize: 11, fill: "var(--chart-axis)" };
 
 function Dashboard() {
   const stats = useQuery({ queryKey: ["stats"], queryFn: statsService.get, retry: false });
   const news = useQuery({ queryKey: ["news", "recent"], queryFn: () => services.news.list({ limit: 5 }), retry: false });
-  const inq = useQuery({ queryKey: ["inquiries", "recent"], queryFn: () => services.inquiries.list({ limit: 5 }), retry: false });
+  const inquiries = useQuery({ queryKey: ["inquiries", "recent"], queryFn: () => services.inquiries.list({ limit: 5 }), retry: false });
   const s = stats.data;
-  const base = getApiBaseUrl();
-  const statsState = (empty: boolean) => (
-    <QueryState compact isLoading={stats.isLoading} error={stats.error} isEmpty={empty} onRetry={() => stats.refetch()} />
-  );
-
-  return (
-    <div className="flex flex-col gap-[var(--dashboard-gap)]">
-      <PageHeader title="แดชบอร์ด" description={isMockMode() ? "โหมดข้อมูลตัวอย่าง: KPI และกราฟคำนวณจากข้อมูลตัวอย่างชุดเดียวกับหน้ารายการ" : "แสดงเฉพาะค่าที่ได้จาก API จริง ไม่มีการคำนวณหรือสร้างตัวเลขสมมติ"} />
-
-      <Section
-        icon={<Newspaper className="size-4" />}
-        title="ข่าว"
-        metrics={<><Metric label="ทั้งหมด" value={s?.newsTotal} /><Metric label="เผยแพร่" value={s?.newsPublished} /></>}
-      />
-      <div className="grid gap-[var(--dashboard-gap)] lg:grid-cols-12">
-        <Panel title="ข่าวรายเดือน (เผยแพร่ / ร่าง)" className="lg:col-span-8">
-          {s?.newsByMonth?.length ? (
-            <div className="h-64">
-              <ResponsiveContainer>
-                <BarChart data={s.newsByMonth}>
-                  <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
-                  <XAxis dataKey="month" tick={axis} />
-                  <YAxis tick={axis} allowDecimals={false} />
-                  <Tooltip />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Bar dataKey="published" name="เผยแพร่" fill="var(--chart-1)" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="draft" name="ฉบับร่าง" fill="var(--chart-3)" radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            statsState(true)
-          )}
-        </Panel>
-        <Panel title="ข่าวล่าสุด" className="lg:col-span-4">
-          {news.data?.data.length ? (
-            <ul className="divide-y divide-border text-sm">
-              {news.data.data.map((n) => (
-                <li key={n.id} className="flex items-center justify-between gap-2 py-2">
-                  <Link to="/news/$id" params={{ id: n.id }} className="truncate hover:text-primary">{n.title}</Link>
-                  <StatusBadge status={n.status} />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <QueryState compact isLoading={news.isLoading} error={news.error} isEmpty onRetry={() => news.refetch()} />
-          )}
-        </Panel>
-      </div>
-
-      <Section
-        icon={<FileText className="size-4" />}
-        title="เอกสารและข้อความติดต่อ"
-        metrics={<><Metric label="เอกสาร" value={s?.documentsTotal} /><Metric label="ข้อความใหม่" value={s?.inquiriesNew} /><Metric label="ข้อความทั้งหมด" value={s?.inquiriesTotal} /><Metric label="FAQ เผยแพร่" value={s?.faqsPublished} /></>}
-      />
-      <div className="grid gap-[var(--dashboard-gap)] lg:grid-cols-12">
-        <Panel title="ข้อความติดต่อล่าสุด" className="lg:col-span-7">
-          {inq.data?.data.length ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted text-xs text-muted-foreground"><tr><th className="px-2 py-1.5 text-left">วันที่</th><th className="px-2 text-left">ชื่อ</th><th className="px-2 text-left">หัวข้อ</th><th className="px-2 text-left">สถานะ</th></tr></thead>
-                <tbody>
-                  {inq.data.data.map((m) => (
-                    <tr key={m.id} className="border-t border-border">
-                      <td className="num px-2 py-2">{formatDate(m.createdAt)}</td>
-                      <td className="px-2">{m.name}<div className="text-xs text-muted-foreground">{m.email}</div></td>
-                      <td className="px-2"><Link to="/inquiries/$id" params={{ id: m.id }} className="hover:text-primary">{m.subject}</Link></td>
-                      <td className="px-2"><StatusBadge status={m.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <QueryState compact isLoading={inq.isLoading} error={inq.error} isEmpty onRetry={() => inq.refetch()} />
-          )}
-        </Panel>
-        <Panel title="เอกสารตามประเภท" className="lg:col-span-5">
-          {s?.documentsByCategory?.length ? (
-            <div className="h-64">
-              <ResponsiveContainer>
-                <BarChart layout="vertical" data={s.documentsByCategory.map((d) => ({ ...d, label: documentCategories.find((c) => c.value === d.category)?.label ?? d.category }))}>
-                  <CartesianGrid stroke="var(--chart-grid)" horizontal={false} />
-                  <XAxis type="number" tick={axis} allowDecimals={false} />
-                  <YAxis type="category" dataKey="label" tick={axis} width={80} />
-                  <Tooltip />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Bar dataKey="count" name="จำนวนเอกสาร" fill="var(--chart-2)" radius={[0, 2, 2, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            statsState(true)
-          )}
-        </Panel>
-      </div>
-
-      <Section icon={<PlugZap className="size-4" />} title="สถานะการเชื่อมต่อ" metrics={isMockMode() ? <MockBadge /> : <StatusBadge status={base ? "connected" : "not_connected"} />} />
-      <div className="grid gap-[var(--dashboard-gap)] md:grid-cols-3">
-        {[
-          { label: "สถิติ (/api/admin/stats)", q: stats },
-          { label: "ข่าว (/api/admin/news)", q: news },
-          { label: "ข้อความติดต่อ (/api/admin/inquiries)", q: inq },
-        ].map(({ label, q }) => (
-          <Panel key={label} title={label}>
-            <p className="text-sm">
-              {q.isLoading ? "กำลังตรวจสอบ…" : q.error ? <span className="text-warning">{q.error.message === "API_NOT_CONNECTED" ? "ยังไม่ได้เชื่อมต่อ API" : `ผิดพลาด: ${q.error.message}`}</span> : <span className="text-healthy">{isMockMode() ? "ตอบกลับจาก mock service (ไม่ใช่ API จริง)" : "ตอบกลับสำเร็จ"}</span>}
-            </p>
-          </Panel>
-        ))}
-      </div>
-      <p className="flex items-center gap-2 text-xs text-muted-foreground"><Inbox className="size-3.5" aria-hidden />โหมดข้อมูล: {isMockMode() ? "mock (ข้อมูลตัวอย่าง)" : "api"} · Base URL: {base ?? "ยังไม่ได้ตั้งค่า"}</p>
+  const statsState = <QueryState compact isLoading={stats.isLoading} error={stats.error} isEmpty onRetry={() => stats.refetch()} />;
+  const metrics = [
+    { label: "ຂ່າວທັງໝົດ", value: s?.newsTotal, detail: s ? `ເຜີຍແຜ່ ${s.newsPublished.toLocaleString("lo-LA")}` : "ຂ່າວ", icon: Newspaper, to: "/news" as const },
+    { label: "ເອກະສານທັງໝົດ", value: s?.documentsTotal, detail: "ທຸກປະເພດ", icon: FileText, to: "/documents" as const },
+    { label: "ຂໍ້ຄວາມໃໝ່", value: s?.inquiriesNew, detail: s ? `ທັງໝົດ ${s.inquiriesTotal.toLocaleString("lo-LA")}` : "ຂໍ້ຄວາມຕິດຕໍ່", icon: Inbox, to: "/inquiries" as const },
+    { label: "ຄຳຖາມທີ່ເຜີຍແຜ່", value: s?.faqsPublished, detail: "ຄຳຖາມທີ່ພົບເລື້ອຍ", icon: HelpCircle, to: "/faqs" as const },
+  ];
+  return <div className="min-w-0 space-y-5 pb-8">
+    <PageHeader title="ພາບລວມ" description="ພາບລວມຂໍ້ມູນ ແລະການຈັດການເວັບໄຊ DPO" />
+    {stats.error && <div className="panel"><QueryState compact isLoading={false} error={stats.error} isEmpty={false} onRetry={() => stats.refetch()} /></div>}
+    <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map(({label,value,detail,icon: Icon,to}) => <Link key={label} to={to} className="panel group min-w-0 p-4 transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-ring sm:p-5"><div className="flex items-start justify-between gap-3"><span className="grid size-10 place-items-center rounded-lg bg-primary-soft text-primary"><Icon className="size-5" aria-hidden /></span><ArrowUpRight className="size-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden /></div><p className="mt-4 text-sm text-muted-foreground">{label}</p>{stats.isLoading ? <LoadingSkeleton compact className="!px-0 !py-3" /> : <><p className="num mt-1 text-3xl font-semibold tracking-tight text-foreground">{value == null ? "—" : value.toLocaleString("lo-LA")}</p><p className="mt-2 text-xs text-muted-foreground">{detail}</p></>}</Link>)}</div>
+    <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-12">
+      <Panel title="ຂ່າວຕາມເດືອນ" description="ຈັດກຸ່ມຕາມວັນທີເຜີຍແຜ່ ຫຼື ວັນທີສ້າງເມື່ອບໍ່ມີວັນເຜີຍແຜ່" className="xl:col-span-8">{s?.newsByMonth?.length ? <NewsTimeline data={s.newsByMonth} /> : statsState}</Panel>
+      <Panel title="ສະຖານະຂ່າວ" description="ສັດສ່ວນຂ່າວທັງໝົດ" className="xl:col-span-4">{s ? <NewsStatusChart total={s.newsTotal} published={s.newsPublished} /> : statsState}</Panel>
+      <Panel title="ເອກະສານຕາມປະເພດ" description="ຈຳນວນເອກະສານໃນແຕ່ລະໝວດ" className="xl:col-span-5">{s?.documentsByCategory?.length ? <DocumentChart data={s.documentsByCategory} /> : statsState}</Panel>
+      <Panel title="ຂໍ້ຄວາມຕິດຕໍ່" description="ສະຖານະຂໍ້ຄວາມທີ່ໄດ້ຮັບ" className="xl:col-span-3">{s ? <InquiryChart total={s.inquiriesTotal} unread={s.inquiriesNew} /> : statsState}</Panel>
+      <Panel title="ຂ່າວລ່າສຸດ" action={<Link to="/news" className="inline-flex min-h-11 items-center gap-1 text-xs font-medium text-primary focus-visible:outline-2 focus-visible:outline-ring">ເບິ່ງທັງໝົດ <ArrowUpRight className="size-3.5" aria-hidden /></Link>} className="xl:col-span-4">{news.data?.data.length ? <ul className="divide-y divide-border">{news.data.data.map(n => <li key={n.id} className="flex min-w-0 items-start justify-between gap-3 py-3 first:pt-0"><div className="min-w-0"><Link to="/news/$id" params={{id:n.id}} className="line-clamp-2 text-sm font-medium leading-relaxed hover:text-primary focus-visible:outline-2 focus-visible:outline-ring">{n.title}</Link><p className="mt-1 text-xs text-muted-foreground">{formatDate(n.publishedAt ?? n.createdAt)}</p></div><StatusBadge status={n.status} /></li>)}</ul> : <QueryState compact isLoading={news.isLoading} error={news.error} isEmpty onRetry={() => news.refetch()} />}</Panel>
     </div>
-  );
+    <Panel title="ຂໍ້ຄວາມຕິດຕໍ່ຫຼ້າສຸດ" description="ຂໍ້ຄວາມທີ່ສົ່ງມາຈາກເວັບໄຊ" action={<Link to="/inquiries" className="inline-flex min-h-11 items-center gap-1 text-xs font-medium text-primary focus-visible:outline-2 focus-visible:outline-ring">ເບິ່ງທັງໝົດ <ArrowUpRight className="size-3.5" aria-hidden /></Link>}>{inquiries.data?.data.length ? <ul className="divide-y divide-border">{inquiries.data.data.map(m => <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 py-3"><div className="min-w-0"><Link to="/inquiries/$id" params={{id:m.id}} className="break-words text-sm font-medium hover:text-primary focus-visible:outline-2 focus-visible:outline-ring">{m.subject || "ຂໍ້ຄວາມບໍ່ມີຫົວຂໍ້"}</Link><p className="mt-1 text-xs text-muted-foreground">{m.name} · {formatDate(m.createdAt)}</p></div><StatusBadge status={m.status} /></li>)}</ul> : <QueryState compact isLoading={inquiries.isLoading} error={inquiries.error} isEmpty onRetry={() => inquiries.refetch()} />}</Panel>
+  </div>;
 }

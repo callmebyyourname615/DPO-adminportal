@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
+import { AuthGate } from "@/components/admin/AuthGate";
 import { AppShell } from "@/components/admin/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
@@ -20,16 +21,16 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">ບໍ່ພົບໜ້ານີ້</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+          ໜ້າທີ່ທ່ານຊອກຫາບໍ່ມີ ຫຼື ຖືກຍ້າຍແລ້ວ.
         </p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            ກັບໜ້າທຳອິດ
           </Link>
         </div>
       </div>
@@ -48,10 +49,10 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          ບໍ່ສາມາດໂຫຼດໜ້ານີ້ໄດ້
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          ມີຂໍ້ຜິດພາດເກີດຂຶ້ນ. ກະລຸນາລອງໃໝ່ ຫຼື ກັບໄປໜ້າທຳອິດ.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -61,13 +62,13 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            ລອງອີກຄັ້ງ
           </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            ກັບໜ້າທຳອິດ
           </a>
         </div>
       </div>
@@ -83,11 +84,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "DPO Admin Portal" },
-      { name: "description", content: "ระบบจัดการเนื้อหาเว็บไซต์สำนักงานปกป้องเงินฝาก" },
+      { title: "ລະບົບບໍລິຫານ DPO" },
+      { name: "description", content: "ລະບົບການຄຸ້ມຄອງເນື້ອຫາເວັບໄຊທ໌ Deposit Protection Office" },
       { name: "robots", content: "noindex, nofollow" },
-      { property: "og:title", content: "DPO Admin Portal" },
-      { property: "og:description", content: "ระบบจัดการเนื้อหาเว็บไซต์สำนักงานปกป้องเงินฝาก" },
+      { property: "og:title", content: "ລະບົບບໍລິຫານ DPO" },
+      { property: "og:description", content: "ລະບົບການຄຸ້ມຄອງເນື້ອຫາເວັບໄຊທ໌ Deposit Protection Office" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
@@ -101,9 +102,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -114,7 +116,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="th">
+    <html lang="lo">
       <head>
         <HeadContent />
       </head>
@@ -132,9 +134,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <AppShell>
+      <AuthGate>{(user, logout) => <AppShell userName={user.name} userRole={user.role} onLogout={logout}>
         <Outlet />
-      </AppShell>
+      </AppShell>}</AuthGate>
       <Toaster richColors position="top-right" />
     </QueryClientProvider>
   );

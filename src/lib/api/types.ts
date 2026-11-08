@@ -50,7 +50,7 @@ export interface Document extends Timestamps {
   documentDate: string | null;
   fileUrl: string | null;
   fileName: string | null;
-  fileType: "pdf" | "xlsx" | null;
+  fileType: "pdf" | "xlsx" | "doc" | "docx" | null;
   fileSize: number | null;
   fileStatus: FileStatus;
   status: PublishStatus;
@@ -123,6 +123,7 @@ export interface SiteSettings {
   youtubeUrl: string;
   mapEmbedUrl: string;
   footerAudioUrl: string | null;
+  footerAudioUrl2: string | null;
   updatedAt: string;
 }
 

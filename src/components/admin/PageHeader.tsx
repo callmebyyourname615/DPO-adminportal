@@ -22,7 +22,7 @@ export function PageHeader({
   return (
     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        <nav aria-label="breadcrumb" className="mb-1">
+        <nav aria-label="ເສັ້ນທາງນຳທາງ" className="mb-1">
           <ol className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
             <li>
               <Link to="/" className="hover:text-primary">

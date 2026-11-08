@@ -1,4 +1,5 @@
 import { AlertTriangle, Inbox, Loader2, PlugZap } from "lucide-react";
+import { LoadingSkeleton } from "./LoadingSkeleton";
 import { Button } from "@/components/ui/button";
 import { ApiNotConnectedError } from "@/lib/api/client";
 import { t } from "@/lib/i18n";
@@ -18,6 +19,7 @@ export function StateBlock({
   onRetry?: (() => unknown) | undefined;
   compact?: boolean | undefined;
 }) {
+  if (kind === "loading") return <LoadingSkeleton compact={compact} />;
   const Icon = { loading: Loader2, empty: Inbox, error: AlertTriangle, "not-connected": PlugZap }[kind];
   const defaults = {
     loading: [t("loading"), ""],
@@ -38,7 +40,7 @@ export function StateBlock({
       className={`flex flex-col items-center justify-center text-center ${compact ? "gap-2 py-6" : "gap-3 py-12"} px-4`}
     >
       <span className={`grid size-10 place-items-center rounded-full ${tone}`}>
-        <Icon className={`size-5 ${kind === "loading" ? "animate-spin" : ""}`} aria-hidden />
+        <Icon className="size-5" aria-hidden />
       </span>
       <p className="font-semibold text-foreground">{title ?? defaults[0]}</p>
       {(hint ?? defaults[1]) && (

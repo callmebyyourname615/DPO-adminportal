@@ -6,10 +6,10 @@ export const Route = createFileRoute("/faqs/")({
   validateSearch: parseListSearch,
   head: () => ({
     meta: [
-      { title: "จัดการ FAQ — DPO Admin" },
-      { name: "description", content: "จัดการ FAQ ในระบบจัดการเว็บไซต์สำนักงานปกป้องเงินฝาก" },
-      { property: "og:title", content: "จัดการ FAQ — DPO Admin" },
-      { property: "og:description", content: "จัดการ FAQ ในระบบจัดการเว็บไซต์ DPO" },
+      { title: "ຈັດການ FAQ — DPO Admin" },
+      { name: "description", content: "ຈັດການ FAQ ໃນລະບົບການຄຸ້ມຄອງເວັບໄຊທ໌ຂອງ Deposit Protection Office" },
+      { property: "og:title", content: "ຈັດການ FAQ — DPO Admin" },
+      { property: "og:description", content: "ຈັດການ FAQ ໃນລະບົບການຄຸ້ມຄອງເວັບໄຊທ໌ DPO" },
     ],
   }),
   component: Page,

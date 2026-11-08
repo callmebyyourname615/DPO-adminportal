@@ -7,10 +7,10 @@ export const Route = createFileRoute("/home/")({
   validateSearch: parseListSearch,
   head: () => ({
     meta: [
-      { title: "จัดการหน้าแรก — DPO Admin" },
-      { name: "description", content: "จัดการหน้าแรก ในระบบจัดการเว็บไซต์สำนักงานปกป้องเงินฝาก" },
-      { property: "og:title", content: "จัดการหน้าแรก — DPO Admin" },
-      { property: "og:description", content: "จัดการหน้าแรก ในระบบจัดการเว็บไซต์ DPO" },
+      { title: "ຈັດການຫນ້າທໍາອິດ — DPO Admin" },
+      { name: "description", content: "ຈັດການຫນ້າທໍາອິດໃນລະບົບການຄຸ້ມຄອງເວັບໄຊທ໌ຂອງ Deposit Protection Office" },
+      { property: "og:title", content: "ຈັດການຫນ້າທໍາອິດ — DPO Admin" },
+      { property: "og:description", content: "ຈັດການຫນ້າທໍາອິດໃນລະບົບການຄຸ້ມຄອງເວັບໄຊທ໌ DPO" },
     ],
   }),
   component: Page,

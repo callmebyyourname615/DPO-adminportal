@@ -30,6 +30,6 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Project rules
-- All data goes through `src/lib/api/services.ts` (proposed admin contract); with no `VITE_DPO_API_BASE_URL` `VITE_DATA_MODE` picks mock (in-memory `src/lib/mock/*`, clearly labeled, resets on refresh) or api; never show mock data as real or replace a configured API.
+- All data goes through `src/lib/api/services.ts` and the DPO backend. Configure `VITE_DPO_API_BASE_URL`; do not fall back to mock data.
 - CRUD sections are config-driven from `src/lib/resources.tsx` and rendered by the generic `ResourceList`/`ResourceForm`, so new sections stay consistent.
 - Pending backend endpoints are listed in `docs/BACKEND_ENDPOINTS.md`; keep it in sync with services.

@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { FileUp, ImagePlus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { FieldDef } from "@/lib/resources";
-import { formatBytes } from "@/lib/i18n";
+import { uploadMedia } from "@/lib/api/services";
+import type { Media } from "@/lib/api/types";
 import { isValidEmail, isValidHttpUrl, isValidSlug, slugify, validateFile } from "@/lib/validation";
 
 export type Values = Record<string, unknown>;
@@ -12,15 +14,15 @@ export function validateFields(fields: FieldDef[], v: Values): Record<string, st
   for (const f of fields) {
     const val = v[f.name];
     const s = typeof val === "string" ? val.trim() : val;
-    if (f.required && (s === "" || s == null) && f.type !== "image" && f.type !== "file") e[f.name] = "จำเป็นต้องกรอก";
+    if (f.required && (s === "" || s == null) && f.type !== "image" && f.type !== "file") e[f.name] = "ຕ້ອງການ";
     else if (typeof s === "string" && s) {
-      if (f.max && s.length > f.max) e[f.name] = `ไม่เกิน ${f.max} ตัวอักษร`;
-      else if (f.type === "slug" && !isValidSlug(s)) e[f.name] = "ใช้ a-z, 0-9 และ - เท่านั้น";
-      else if (f.type === "url" && !isValidHttpUrl(s)) e[f.name] = "รูปแบบ URL ไม่ถูกต้อง (http/https)";
-      else if (f.type === "email" && !isValidEmail(s)) e[f.name] = "รูปแบบอีเมลไม่ถูกต้อง";
+      if (f.max && s.length > f.max) e[f.name] = `ບໍ່ຫຼາຍກ່ວາ ${f.max} ຈົດໝາຍ`;
+      else if (f.type === "slug" && !isValidSlug(s)) e[f.name] = "ໃຊ້ a-z, 0-9 ແລະ - ເທົ່ານັ້ນ";
+      else if (f.type === "url" && !isValidHttpUrl(s)) e[f.name] = "ຮູບແບບ URL ບໍ່ຖືກຕ້ອງ (http/https)";
+      else if (f.type === "email" && !isValidEmail(s)) e[f.name] = "ຮູບແບບອີເມວບໍ່ຖືກຕ້ອງ";
     }
     if (f.type === "number" && val !== "" && (!Number.isFinite(Number(val)) || Number(val) < 0))
-      e[f.name] = "ต้องเป็นตัวเลข 0 ขึ้นไป";
+      e[f.name] = "ຕ້ອງເປັນຕົວເລກ 0 ຂຶ້ນ";
   }
   return e;
 }
@@ -33,12 +35,20 @@ export function FieldInput({
   error,
   values,
   onChange,
+  visualMedia = false,
+  newsEditor = false,
+  visualDocument = false,
+  onUploadingChange,
 }: {
   field: FieldDef;
   value: unknown;
   error?: string | undefined;
   values: Values;
-  onChange: (v: unknown) => void;
+  onChange: (v: unknown, media?: Media) => void;
+  visualMedia?: boolean;
+  newsEditor?: boolean;
+  visualDocument?: boolean;
+  onUploadingChange?: (name: string, uploading: boolean) => void;
 }) {
   const id = `f-${f.name}`;
   const describedBy = error ? `${id}-err` : f.help ? `${id}-help` : undefined;
@@ -48,7 +58,7 @@ export function FieldInput({
   switch (f.type) {
     case "textarea":
     case "richtext":
-      control = <Textarea {...common} rows={f.type === "richtext" ? 10 : 3} value={str} onChange={(e) => onChange(e.target.value)} />;
+      control = <Textarea {...common} rows={newsEditor ? (f.type === "richtext" ? 16 : f.name === "title" ? 3 : 5) : f.type === "richtext" ? 10 : 3} className={newsEditor ? "min-h-24 resize-y bg-surface px-4 py-3 text-base leading-7" : undefined} value={str} onChange={(e) => onChange(e.target.value)} />;
       break;
     case "select":
     case "status":
@@ -61,8 +71,8 @@ export function FieldInput({
         >
           {(f.type === "status"
             ? [
-                { value: "draft", label: "ฉบับร่าง" },
-                { value: "published", label: "เผยแพร่" },
+                { value: "draft", label: "ຮ່າງ" },
+                { value: "published", label: "ເຜີຍແຜ່" },
               ]
             : (f.options ?? [])
           ).map((o) => (
@@ -83,7 +93,7 @@ export function FieldInput({
               className="whitespace-nowrap rounded-[var(--radius-control)] border border-input px-3 text-xs hover:bg-muted"
               onClick={() => onChange(slugify(String(values[f.slugFrom!] ?? "")))}
             >
-              สร้างจากหัวข้อ
+              ສ້າງຈາກຫົວຂໍ້
             </button>
           )}
         </div>
@@ -92,7 +102,7 @@ export function FieldInput({
     case "image":
     case "file":
     case "gallery":
-      control = <FilePicker field={f} value={value} id={id} />;
+      control = <FilePicker field={f} value={value} id={id} onChange={onChange} visualMedia={visualMedia} visualDocument={visualDocument} fileName={typeof values["fileName"] === "string" ? values["fileName"] : undefined} onUploadingChange={onUploadingChange} />;
       break;
     case "date":
       control = (
@@ -118,6 +128,7 @@ export function FieldInput({
         {f.required && <span className="text-destructive"> *</span>}
       </label>
       {control}
+      {newsEditor && f.max && !error && <p className="mt-1.5 text-right text-xs text-muted-foreground">{str.length.toLocaleString("lo-LA")} / {f.max.toLocaleString("lo-LA")}</p>}
       {f.help && !error && (
         <p id={`${id}-help`} className="mt-1 text-xs text-muted-foreground">
           {f.help}
@@ -132,45 +143,38 @@ export function FieldInput({
   );
 }
 
-/** Selects files and validates type/size locally. Upload needs a confirmed backend flow; nothing is base64-embedded. */
-function FilePicker({ field: f, value, id }: { field: FieldDef; value: unknown; id: string }) {
-  const [picked, setPicked] = useState<{ name: string; size: number; error: string | null }[]>([]);
+function FilePicker({ field: f, value, id, onChange, visualMedia, visualDocument, fileName, onUploadingChange }: { field: FieldDef; value: unknown; id: string; onChange: (value: unknown, media?: Media) => void; visualMedia: boolean; visualDocument: boolean; fileName?: string | undefined; onUploadingChange?: ((name: string, uploading: boolean) => void) | undefined }) {
+  const [message, setMessage] = useState("");
+  const [uploading, setUploading] = useState(false);
   const current = Array.isArray(value) ? value : value ? [value] : [];
-  return (
-    <div className="rounded-[var(--radius-control)] border border-dashed border-input p-3">
-      {current.length > 0 && (
-        <ul className="mb-2 text-xs text-muted-foreground">
-          {current.map((u) => (
-            <li key={String(u)} className="truncate">
-              ไฟล์ปัจจุบัน: {String(u)}
-            </li>
-          ))}
-        </ul>
-      )}
-      <input
-        id={id}
-        type="file"
-        multiple={f.type === "gallery"}
-        accept={f.accept?.map((a) => `.${a}`).join(",")}
-        className="block w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-primary-soft file:px-3 file:py-1.5 file:text-primary"
-        onChange={(e) =>
-          setPicked(
-            Array.from(e.target.files ?? []).map((file) => ({
-              name: file.name,
-              size: file.size,
-              error: validateFile(file, f.accept ?? [], f.maxMb ?? 5),
-            })),
-          )
-        }
-      />
-      <p className="mt-1 text-xs text-muted-foreground">
-        รองรับ {f.accept?.join(", ").toUpperCase()} ไม่เกิน {f.maxMb} MB
-      </p>
-      {picked.map((p) => (
-        <p key={p.name} className={`mt-1 text-xs ${p.error ? "text-destructive" : "text-foreground"}`}>
-          {p.name} ({formatBytes(p.size)}) — {p.error ?? "ยังอัปโหลดไม่ได้: รอ API อัปโหลดไฟล์"}
-        </p>
-      ))}
-    </div>
-  );
+  async function select(files: File[]) {
+    if (!files.length) return;
+    const invalid = files.map(file => validateFile(file, f.accept ?? [], f.maxMb ?? 5)).find(Boolean);
+    if (invalid) { setMessage(invalid); return; }
+    setUploading(true); onUploadingChange?.(f.name, true); setMessage("");
+    try {
+      const uploaded = [];
+      for (const file of files) uploaded.push(await uploadMedia(file));
+      if (f.type === "gallery") onChange([...current, ...uploaded.map(item => item.url)]);
+      else if (uploaded[0]) onChange(uploaded[0].url, uploaded[0]);
+      setMessage("ອັບໂຫຼດສຳເລັດ");
+    } catch (error) { setMessage(`ອັບໂຫຼດບໍ່ສຳເລັດ: ${error instanceof Error ? error.message : ""}`); }
+    finally { setUploading(false); onUploadingChange?.(f.name, false); }
+  }
+  if (visualDocument && f.type === "file") return <div className="space-y-3">
+    {current.length > 0 && <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border bg-muted/30 p-3"><span className="grid size-10 shrink-0 place-items-center rounded-md bg-primary-soft text-primary"><FileUp className="size-5" aria-hidden /></span><div className="min-w-0"><p className="truncate text-sm font-medium">{fileName || "ໄຟລ໌ເອກະສານ"}</p><p className="mt-1 text-xs text-muted-foreground">ອັບໂຫຼດແລ້ວ</p></div></div>}
+    <label htmlFor={id} className="flex min-h-32 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-input bg-muted/30 px-4 py-5 text-center text-sm text-primary hover:bg-primary-soft focus-within:outline-2 focus-within:outline-ring"><FileUp className="size-6" aria-hidden /><span className="font-medium">{uploading ? "ກຳລັງອັບໂຫຼດ..." : current.length ? "ປ່ຽນໄຟລ໌ເອກະສານ" : "ເລືອກໄຟລ໌ເອກະສານ"}</span><span className="text-xs text-muted-foreground">{f.accept?.join(" / ").toUpperCase()} · {f.maxMb} MB</span><input id={id} type="file" disabled={uploading} accept={f.accept?.map(a => `.${a}`).join(",")} className="sr-only" onChange={e => { void select(Array.from(e.target.files ?? [])); e.target.value = ""; }} /></label>
+    {message && <p role="status" className="text-xs text-muted-foreground">{message}</p>}
+  </div>;
+  if (visualMedia && (f.type === "image" || f.type === "gallery")) return <div className="space-y-3">
+    {current.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{current.map((url, index) => <div key={`${String(url)}-${index}`} className="group relative overflow-hidden rounded-lg border border-border bg-muted"><img src={String(url)} alt={`${f.label} ${index + 1}`} className="aspect-[4/3] w-full object-cover" loading="lazy" /><button type="button" disabled={uploading} onClick={() => onChange(f.type === "gallery" ? current.filter((_, i) => i !== index) : "")} aria-label={`ລຶບ ${f.label} ${index + 1}`} className="absolute right-2 top-2 grid size-9 place-items-center rounded-md bg-card text-destructive shadow-sm hover:bg-expired-bg focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-50"><X className="size-4" aria-hidden /></button></div>)}</div>}
+    <label htmlFor={id} className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-input bg-muted/30 px-4 py-3 text-center text-sm text-primary hover:bg-primary-soft focus-within:outline-2 focus-within:outline-ring"><ImagePlus className="size-5" aria-hidden /><span>{uploading ? "ກຳລັງອັບໂຫຼດ..." : f.type === "gallery" ? "ເພີ່ມຮູບປະກອບ" : f.name === "logoUrl" ? (current.length ? "ປ່ຽນໂລໂກ້" : "ເລືອກໂລໂກ້") : f.name === "coverImageUrl" ? (current.length ? "ປ່ຽນຮູບໜ້າປົກ" : "ເລືອກຮູບໜ້າປົກ") : current.length ? "ປ່ຽນຮູບ" : "ເລືອກຮູບ"}</span><span className="text-xs text-muted-foreground">{f.accept?.join(", ").toUpperCase()} · {f.maxMb} MB</span><input id={id} type="file" multiple={f.type === "gallery"} disabled={uploading} accept={f.accept?.map(a => `.${a}`).join(",")} className="sr-only" onChange={e => { void select(Array.from(e.target.files ?? [])); e.target.value = ""; }} /></label>
+    {message && <p role="status" className="text-xs text-muted-foreground">{message}</p>}
+  </div>;
+  return <div className="rounded-[var(--radius-control)] border border-dashed border-input p-3">
+    {current.map(u => <div key={String(u)} className="mb-1 break-all text-xs">{String(u)}</div>)}
+    <input id={id} type="file" multiple={f.type === "gallery"} disabled={uploading} accept={f.accept?.map(a => `.${a}`).join(",")} className="block w-full text-sm" onChange={e => { void select(Array.from(e.target.files ?? [])); e.target.value = ""; }} />
+    <p className="mt-1 text-xs text-muted-foreground">{f.accept?.join(", ").toUpperCase()} · {f.maxMb} MB</p>
+    <p role="status" className="mt-1 text-xs">{uploading ? "ກຳລັງອັບໂຫຼດ..." : message}</p>
+  </div>;
 }

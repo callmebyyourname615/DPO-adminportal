@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { ContactRound, MapPin, Save, Share2, Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FieldInput, validateFields, type Values } from "@/components/admin/FormFields";
@@ -14,23 +15,24 @@ import type { FieldDef } from "@/lib/resources";
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "ตั้งค่าเว็บไซต์ — DPO Admin" },
-      { name: "description", content: "ข้อมูลติดต่อ โซเชียล แผนที่ และไฟล์เสียงของ footer" },
-      { property: "og:title", content: "ตั้งค่าเว็บไซต์ — DPO Admin" },
-      { property: "og:description", content: "ตั้งค่าข้อมูล footer ของเว็บไซต์ DPO" },
+      { title: "ຕັ້ງຄ່າເວັບໄຊທ໌ — DPO Admin" },
+      { name: "description", content: "ຂໍ້ມູນຕິດຕໍ່, ສື່ສັງຄົມ, ແຜນທີ່ ແລະໄຟລ໌ສຽງ footer" },
+      { property: "og:title", content: "ຕັ້ງຄ່າເວັບໄຊທ໌ — DPO Admin" },
+      { property: "og:description", content: "ກໍານົດຂໍ້ມູນ footer ຂອງເວັບໄຊທ໌ DPO" },
     ],
   }),
   component: SettingsPage,
 });
 
 const fields: FieldDef[] = [
-  { name: "email", label: "อีเมล", type: "email", required: true },
-  { name: "phone", label: "เบอร์โทร", type: "tel", required: true },
-  { name: "address", label: "ที่อยู่", type: "textarea", wide: true, required: true },
+  { name: "email", label: "ອີເມວ", type: "email", required: true },
+  { name: "phone", label: "ເບີໂທລະສັບ", type: "tel", required: true },
+  { name: "address", label: "ທີ່ຢູ່", type: "textarea", wide: true, required: true },
   { name: "facebookUrl", label: "Facebook", type: "url" },
   { name: "youtubeUrl", label: "YouTube", type: "url" },
-  { name: "mapEmbedUrl", label: "ลิงก์แผนที่ (embed)", type: "url", wide: true },
-  { name: "footerAudioUrl", label: "ไฟล์เสียง footer", type: "file", accept: ["mp3", "m4a", "ogg"], maxMb: 10, wide: true },
+  { name: "mapEmbedUrl", label: "ການເຊື່ອມຕໍ່ແຜນທີ່ (embed)", type: "url", wide: true },
+  { name: "footerAudioUrl", label: "ລິ້ງໄຟລ໌ສຽງ 1", type: "text", help: "ໃສ່ລິ້ງຂອງໄຟລ໌ສຽງທີ່ອັບໂຫຼດແລ້ວ", wide: true },
+  { name: "footerAudioUrl2", label: "ລິ້ງໄຟລ໌ສຽງ 2", type: "text", help: "ໃສ່ລິ້ງຂອງໄຟລ໌ສຽງທີ່ອັບໂຫຼດແລ້ວ", wide: true },
 ];
 
 function SettingsPage() {
@@ -43,27 +45,28 @@ function SettingsPage() {
   const m = useMutation({
     mutationFn: (d: Values) => settingsService.update(d as never),
     onSuccess: () => toast.success(t("saved")),
-    onError: (e) => toast.error(`บันทึกไม่สำเร็จ: ${e.message}`),
+    onError: (e) => toast.error(`ບັນທຶກລົ້ມເຫລວ: ${e.message}`),
   });
   return (
     <div>
-      <PageHeader title="ตั้งค่าเว็บไซต์" crumbs={[{ label: "ตั้งค่า" }]} />
+      <PageHeader title="ຕັ້ງຄ່າເວັບໄຊທ໌" crumbs={[{ label: "ຕັ້ງຄ່າ" }]} />
       {(q.isLoading || q.error) && (
         <div className="panel mb-4"><QueryState compact isLoading={q.isLoading} error={q.error} isEmpty={false} onRetry={() => q.refetch()} /></div>
       )}
-      <form className="panel grid gap-4 p-4 md:grid-cols-2" noValidate onSubmit={(e) => {
+      {!q.isLoading && !q.error && <form className="space-y-4" noValidate onSubmit={(e) => {
         e.preventDefault();
         const errs = validateFields(fields, v);
         setErrors(errs);
         if (!Object.keys(errs).length) m.mutate(v);
       }}>
-        {fields.map((f) => (
-          <FieldInput key={f.name} field={f} value={v[f.name]} values={v} error={errors[f.name]} onChange={(x) => setV((s) => ({ ...s, [f.name]: x }))} />
-        ))}
-        <div className="flex justify-end border-t border-border pt-4 md:col-span-2">
-          <Button type="submit" disabled={!canUseData() || m.isPending} title={!canUseData() ? t("saveDisabled") : undefined}>{t("save")}</Button>
-        </div>
-      </form>
+        {[
+          { title: "ຂໍ້ມູນຕິດຕໍ່", description: "ຂໍ້ມູນສຳລັບການຕິດຕໍ່ອົງການ", icon: ContactRound, names: ["email", "phone", "address"] },
+          { title: "ສື່ສັງຄົມ", description: "ລິ້ງໄປຍັງຊ່ອງທາງຂອງອົງການ", icon: Share2, names: ["facebookUrl", "youtubeUrl"] },
+          { title: "ແຜນທີ່", description: "ລິ້ງແຜນທີ່ສຳລັບສະແດງໃນເວັບໄຊ", icon: MapPin, names: ["mapEmbedUrl"] },
+          { title: "ໄຟລ໌ສຽງ", description: "ລິ້ງໄຟລ໌ສຽງໃນສ່ວນທ້າຍເວັບໄຊ", icon: Volume2, names: ["footerAudioUrl", "footerAudioUrl2"] },
+        ].map(section => <section className="panel p-5 sm:p-6" key={section.title}><div className="mb-5 flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary"><section.icon className="size-5" aria-hidden /></span><div><h2 className="font-semibold">{section.title}</h2><p className="mt-1 text-xs text-muted-foreground">{section.description}</p></div></div><div className="grid gap-4 md:grid-cols-2">{section.names.map(name => { const f = fields.find(field => field.name === name)!; return <FieldInput key={f.name} field={f} value={v[f.name]} values={v} error={errors[f.name]} onChange={(x) => setV((state) => ({ ...state, [f.name]: x }))} />; })}</div></section>)}
+        <div className="flex justify-end"><Button type="submit" disabled={!canUseData() || m.isPending} title={!canUseData() ? t("saveDisabled") : undefined}><Save className="size-4" aria-hidden /> {m.isPending ? "ກຳລັງບັນທຶກ..." : t("save")}</Button></div>
+      </form>}
     </div>
   );
 }
