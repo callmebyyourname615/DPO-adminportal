@@ -79,6 +79,8 @@
   --color-chart-grid: var(--chart-grid);
   --color-chart-axis: var(--chart-axis);
   --color-healthy: var(--status-healthy);
+  --color-switch-on: #28d12d;
+  --color-switch-off: #eb0000;
   --color-healthy-bg: var(--status-healthy-bg);
   --color-warning: var(--status-warning);
   --color-warning-bg: var(--status-warning-bg);
@@ -278,3 +280,17 @@
 
 /* Loading shimmer is a single composited layer per placeholder. */
 .loading-sheen { background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--surface) 65%, transparent), transparent); }
+
+/* Alert colors copied from imzapp_emp_main; scoped to the notification components. */
+@theme {
+  --color-alert-backdrop: oklch(0.279354 0.003423 345.4616);
+  --color-alert-paper: oklch(1.000000 0.000000 89.8756);
+  --color-alert-ink: oklch(0.173042 0.000000 89.8756);
+  --color-alert-muted: oklch(0.527122 0.013257 308.1816);
+  --color-alert-border: oklch(0.846268 0.008830 308.3446);
+  --color-alert-primary: oklch(0.576174 0.234621 26.7114);
+  --color-alert-primary-hover: oklch(0.525984 0.214046 26.4775);
+  --color-alert-primary-pressed: oklch(0.488487 0.198750 26.4108);
+  --color-alert-success: oklch(0.496407 0.100424 157.3979);
+  --color-alert-danger: oklch(0.500336 0.182051 29.5127);
+}

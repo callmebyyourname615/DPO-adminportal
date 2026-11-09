@@ -1,9 +1,10 @@
+import { mediaUrl } from "@/lib/api/media";
 /* Hallmark · pre-emit critique: P4 H5 E4 S5 R5 V4 */
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, ImageOff, Newspaper, Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notifications";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,7 @@ const LIMIT = 10;
 function NewsImage({ item }: { item: News }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [item.coverImageUrl]);
-  return <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted text-muted-foreground sm:size-20">{item.coverImageUrl && !failed ? <img src={item.coverImageUrl} alt="" loading="lazy" onError={() => setFailed(true)} className="size-full object-cover" /> : <ImageOff className="size-5" aria-hidden="true" />}</div>;
+  return <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted text-muted-foreground sm:size-20">{item.coverImageUrl && !failed ? <img src={mediaUrl(item.coverImageUrl)} alt="" loading="lazy" onError={() => setFailed(true)} className="size-full object-cover" /> : <ImageOff className="size-5" aria-hidden="true" />}</div>;
 }
 
 export function NewsList({ search }: { search: ListSearch }) {
@@ -37,9 +38,9 @@ export function NewsList({ search }: { search: ListSearch }) {
     onSuccess: async () => {
       setSelected(null);
       await Promise.all([qc.invalidateQueries({ queryKey: ["news"] }), qc.invalidateQueries({ queryKey: ["stats"] })]);
-      toast.success(t("deleted"));
+      notify.success(t("deleted"));
     },
-    onError: (error) => toast.error(`ລຶບບໍ່ສຳເລັດ: ${error.message}`),
+    onError: (error) => notify.error(`ລຶບບໍ່ສຳເລັດ: ${error.message}`),
   });
   const rows = query.data?.data ?? [];
   const page = query.data?.page ?? search.page ?? 1;

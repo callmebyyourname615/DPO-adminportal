@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ResourceForm } from "@/components/admin/ResourceForm";
 const { create, uploadMedia } = vi.hoisted(() => ({ create: vi.fn().mockResolvedValue({ id: "partner-1" }), uploadMedia: vi.fn() }));
 vi.mock("@tanstack/react-router", () => ({ Link: ({children}: any) => <a href="#">{children}</a>, useNavigate: () => vi.fn() }));
-vi.mock("@/lib/api/client", () => ({ canUseData: () => true, ApiNotConnectedError: class extends Error {} }));
+vi.mock("@/lib/api/client", () => ({ canUseData: () => true, getApiBaseUrl: () => "http://localhost:3000", ApiNotConnectedError: class extends Error {} }));
 vi.mock("@/lib/api/services", () => ({ services: { partners: { create } }, uploadMedia }));
 vi.mock("@/components/admin/LoadingSkeleton", () => ({ LoadingSkeleton: () => <span>loading</span> }));
 describe("partner creation", () => {

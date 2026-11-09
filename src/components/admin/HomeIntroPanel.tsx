@@ -1,7 +1,8 @@
+import { mediaUrl } from "@/lib/api/media";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ImagePlus, Save } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
 import { canUseData } from "@/lib/api/client";
 import { homeIntroService } from "@/lib/api/services";
@@ -20,14 +21,15 @@ export function HomeIntroPanel() {
   const q = useQuery({ queryKey: ["home-intro"], queryFn: homeIntroService.get, retry: false });
   const [v, setV] = useState<Values>({ title: "", content: "" });
   const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   useEffect(() => {
     if (q.data) setV(q.data as unknown as Values);
   }, [q.data]);
   const m = useMutation({
     mutationFn: (d: Values) => homeIntroService.update(d as never),
-    onSuccess: () => toast.success(t("saved")),
-    onError: (e) => toast.error(`ບັນທຶກລົ້ມເຫລວ: ${e.message}`),
+    onSuccess: () => notify.success(t("saved")),
+    onError: (e) => notify.error(`ບັນທຶກລົ້ມເຫລວ: ${e.message}`),
   });
   return (
     <section className="panel mb-4" aria-labelledby="intro-h">
@@ -46,7 +48,7 @@ export function HomeIntroPanel() {
           }}
         >
           {fields.map((f) => (
-            <FieldInput key={f.name} field={f} value={v[f.name]} values={v} error={errors[f.name]} visualMedia onUploadingChange={(_, active) => setUploading(active)} onChange={(x) => setV((s) => ({ ...s, [f.name]: x }))} />
+            <FieldInput onPreviewChange={setImagePreview} key={f.name} field={f} value={v[f.name]} values={v} error={errors[f.name]} visualMedia onUploadingChange={(_, active) => setUploading(active)} onChange={(x) => setV((s) => ({ ...s, [f.name]: x }))} />
           ))}
           <div className="md:col-span-2 flex justify-end">
             <Button type="submit" disabled={!canUseData() || m.isPending || uploading}><Save className="size-4" aria-hidden /> {m.isPending ? "ກຳລັງບັນທຶກ..." : t("save")}</Button>
@@ -54,7 +56,7 @@ export function HomeIntroPanel() {
         </form>
         <aside className="rounded-md bg-muted p-4 xl:col-span-5" aria-label={t("preview")}>
           <p className="mb-2 text-xs uppercase text-muted-foreground">{t("preview")}</p>
-          {v["imageUrl"] ? <img src={String(v["imageUrl"])} alt="" className="mb-4 aspect-video w-full rounded-md object-cover" /> : <div className="mb-4 grid aspect-video place-items-center rounded-md bg-background text-muted-foreground"><ImagePlus className="size-7" aria-hidden /></div>}
+          {imagePreview || v["imageUrl"] ? <img src={imagePreview || mediaUrl(String(v["imageUrl"]))} alt="" className="mb-4 aspect-video w-full rounded-md object-cover" /> : <div className="mb-4 grid aspect-video place-items-center rounded-md bg-background text-muted-foreground"><ImagePlus className="size-7" aria-hidden /></div>}
           <h3 className="text-lg font-semibold">{(v["title"] as string) || "ຫົວຂໍ້ແນະນໍາ"}</h3>
           <p className="mt-2 whitespace-pre-wrap text-sm">{(v["content"] as string) || ""}</p>
         </aside>

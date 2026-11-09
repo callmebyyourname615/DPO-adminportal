@@ -62,6 +62,7 @@ function getAuthHeaders(): Record<string, string> {
 }
 
 export interface RequestOptions {
+  responseType?: "json" | "blob";
   method?: "GET" | "POST" | "PATCH" | "DELETE" | undefined;
   query?: Record<string, unknown>;
   body?: unknown | undefined;
@@ -75,7 +76,7 @@ export async function apiRequest<T>(path: string, opts: RequestOptions = {}): Pr
   const res = await fetch(buildUrl(base, path, opts.query), {
     method: opts.method ?? "GET",
     headers: {
-      Accept: "application/json",
+      Accept: opts.responseType === "blob" ? "*/*" : "application/json",
       ...(opts.body && !isForm ? { "Content-Type": "application/json" } : {}),
       ...getAuthHeaders(),
     },
@@ -97,5 +98,6 @@ export async function apiRequest<T>(path: string, opts: RequestOptions = {}): Pr
     throw new ApiError(res.status, Array.isArray(msg) ? msg.join(", ") : msg);
   }
   if (res.status === 204) return undefined as T;
+  if (opts.responseType === "blob") return (await res.blob()) as T;
   return (await res.json()) as T;
 }

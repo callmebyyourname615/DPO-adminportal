@@ -1,0 +1,12 @@
+{
+  "scope": "inquiry detail page",
+  "genre": "modern-minimal",
+  "audience": "DPO administrators",
+  "task": "read messages and update inquiry status",
+  "theme": "existing DPO design tokens in src/styles.css",
+  "fonts": ["Noto Sans Lao", "Open Sans"],
+  "framework": "React 19 / TanStack Start / Tailwind 4",
+  "motion": "existing GSAP alerts; quiet interface feedback",
+  "spacing": "existing 4-point scale",
+  "implementation": "add InquiryDetail.tsx; preserve ResourceForm data and mutation ownership"
+}

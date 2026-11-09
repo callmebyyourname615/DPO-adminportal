@@ -135,6 +135,14 @@ export interface Media extends Timestamps {
   url: string;
 }
 
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  role: "admin" | "editor" | "viewer";
+  active: boolean;
+}
+
 export interface DashboardStats {
   newsTotal: number;
   newsPublished: number;
@@ -152,4 +160,23 @@ export interface ListQuery {
   q?: string | undefined;
   category?: string | undefined;
   status?: string | undefined;
+}
+
+export interface VisitorCounts { views: number; visitors: number; sessions: number }
+export interface VisitorGroup extends VisitorCounts { key: string; title?: string }
+export interface VisitorFilters { from: string; to: string; country?: string; device?: string; path?: string }
+export interface VisitorReport {
+  from: string; to: string; oldest: string; hourly: boolean; timezone: string; generatedAt: string;
+  startedAt: string | null; allTimeViews: number; current: VisitorCounts; previous: VisitorCounts; previousAvailable: boolean;
+  trend: (VisitorCounts & { bucket: string })[];
+  countries: VisitorGroup[]; pages: VisitorGroup[]; sources: VisitorGroup[];
+  landingPages: VisitorGroup[];
+  devices: VisitorGroup[]; browsers: VisitorGroup[]; systems: VisitorGroup[];
+  countryOptions: { key: string }[]; pathOptions: { key: string }[];
+  geoMode: "geoip" | "trusted-proxy" | "unconfigured";
+  geoSource: { provider: string; updatedAt: string } | null;
+}
+export interface VisitorEvent {
+  id: string; visitor: string; path: string; title: string; country: string; device: string;
+  browser: string; os: string; source: string; occurredAt: string;
 }

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as UsersRouteImport } from './routes/users'
+import { Route as VisitorsRouteImport } from './routes/visitors'
 import { Route as DocumentsIndexRouteImport } from './routes/documents.index'
 import { Route as DocumentsIdRouteImport } from './routes/documents.$id'
 import { Route as FaqsIndexRouteImport } from './routes/faqs.index'
@@ -46,6 +47,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const UsersRoute = UsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VisitorsRoute = VisitorsRouteImport.update({
+  id: '/visitors',
+  path: '/visitors',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentsIndexRoute = DocumentsIndexRouteImport.update({
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/media': typeof MediaRoute
   '/settings': typeof SettingsRoute
   '/users': typeof UsersRoute
+  '/visitors': typeof VisitorsRoute
   '/documents/$id': typeof DocumentsIdRoute
   '/faqs/$id': typeof FaqsIdRoute
   '/home/$id': typeof HomeIdRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/media': typeof MediaRoute
   '/settings': typeof SettingsRoute
   '/users': typeof UsersRoute
+  '/visitors': typeof VisitorsRoute
   '/documents/$id': typeof DocumentsIdRoute
   '/faqs/$id': typeof FaqsIdRoute
   '/home/$id': typeof HomeIdRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/media': typeof MediaRoute
   '/settings': typeof SettingsRoute
   '/users': typeof UsersRoute
+  '/visitors': typeof VisitorsRoute
   '/documents/$id': typeof DocumentsIdRoute
   '/faqs/$id': typeof FaqsIdRoute
   '/home/$id': typeof HomeIdRoute
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/media'
     | '/settings'
     | '/users'
+    | '/visitors'
     | '/documents/$id'
     | '/faqs/$id'
     | '/home/$id'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/media'
     | '/settings'
     | '/users'
+    | '/visitors'
     | '/documents/$id'
     | '/faqs/$id'
     | '/home/$id'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/media'
     | '/settings'
     | '/users'
+    | '/visitors'
     | '/documents/$id'
     | '/faqs/$id'
     | '/home/$id'
@@ -248,6 +260,7 @@ export interface RootRouteChildren {
   MediaRoute: typeof MediaRoute
   SettingsRoute: typeof SettingsRoute
   UsersRoute: typeof UsersRoute
+  VisitorsRoute: typeof VisitorsRoute
   DocumentsIdRoute: typeof DocumentsIdRoute
   FaqsIdRoute: typeof FaqsIdRoute
   HomeIdRoute: typeof HomeIdRoute
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof UsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/visitors': {
+      id: '/visitors'
+      path: '/visitors'
+      fullPath: '/visitors'
+      preLoaderRoute: typeof VisitorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/documents/': {
@@ -400,6 +420,7 @@ const rootRouteChildren: RootRouteChildren = {
   MediaRoute: MediaRoute,
   SettingsRoute: SettingsRoute,
   UsersRoute: UsersRoute,
+  VisitorsRoute: VisitorsRoute,
   DocumentsIdRoute: DocumentsIdRoute,
   FaqsIdRoute: FaqsIdRoute,
   HomeIdRoute: HomeIdRoute,

@@ -5,7 +5,7 @@ import { ResourceForm } from "@/components/admin/ResourceForm";
 
 const { createBanner, createPage, uploadMedia, getBanner, updateBanner } = vi.hoisted(() => ({ getBanner: vi.fn().mockResolvedValue({ id: "legacy-banner-1", title: "Existing banner", imageUrl: "/existing.png", linkUrl: "https://example.org", order: 2, status: "draft" }), updateBanner: vi.fn().mockResolvedValue({ id: "legacy-banner-1" }), createBanner: vi.fn().mockResolvedValue({ id: "banner-1" }), createPage: vi.fn().mockResolvedValue({ id: "page-1" }), uploadMedia: vi.fn().mockResolvedValue({ url: "/api/media/image/content", fileName: "image.png", size: 5 }) }));
 vi.mock("@tanstack/react-router", () => ({ Link: ({ children }: any) => <a href="#">{children}</a>, useNavigate: () => vi.fn() }));
-vi.mock("@/lib/api/client", () => ({ canUseData: () => true, ApiNotConnectedError: class extends Error {} }));
+vi.mock("@/lib/api/client", () => ({ canUseData: () => true, getApiBaseUrl: () => "http://localhost:3000", ApiNotConnectedError: class extends Error {} }));
 vi.mock("@/lib/api/services", () => ({ services: { banners: { create: createBanner, get: getBanner, update: updateBanner }, pages: { create: createPage } }, uploadMedia }));
 vi.mock("@/components/admin/LoadingSkeleton", () => ({ LoadingSkeleton: () => <span>loading</span> }));
 

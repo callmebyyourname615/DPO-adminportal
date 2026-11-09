@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { mediaUrl } from "@/lib/api/media";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Image, Pencil, Plus, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Image, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,8 @@ import type { ListSearch } from "@/lib/list-search";
 import { resources } from "@/lib/resources";
 import { PageHeader } from "./PageHeader";
 import { QueryState } from "./StateBlock";
+import { notify } from "@/lib/notifications";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const LIMIT = 10;
 
@@ -25,6 +28,8 @@ export function ResourceList({
   const def = resources[resourceKey]!;
   const svc = services[def.key] as CrudService<any>;
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [selected, setSelected] = useState<{ id: string; label: string } | null>(null);
   const [q, setQ] = useState(search.q ?? "");
   useEffect(() => setQ(search.q ?? ""), [search.q]);
 
@@ -39,6 +44,15 @@ export function ResourceList({
     retry: false,
   });
   const rows = (query.data?.data ?? []) as Record<string, any>[];
+  const del = useMutation({
+    mutationFn: (id: string) => svc.remove(id),
+    onSuccess: async () => {
+      setSelected(null);
+      await Promise.all([qc.invalidateQueries({ queryKey: [def.key] }), qc.invalidateQueries({ queryKey: ["stats"] })]);
+      notify.success(t("deleted"));
+    },
+    onError: (error) => notify.error(`ລຶບບໍ່ສຳເລັດ: ${error.message}`),
+  });
   const detail = `${def.basePath}/$id` as "/news/$id";
 
   return (
@@ -129,7 +143,7 @@ export function ResourceList({
                     <tr key={r["id"]} className="border-t border-border hover:bg-muted/50">
                       {def.columns.map((c) => (
                         <td key={c.key} className={`px-3 py-2.5 align-middle ${c.className ?? ""}`}>
-                          {resourceKey === "banners" && c.key === "title" ? <div className="flex min-w-0 items-center gap-3"><span className="grid h-14 w-20 shrink-0 place-items-center overflow-hidden rounded-md bg-muted">{r["imageUrl"] ? <img src={String(r["imageUrl"])} alt="" className="size-full object-cover" /> : <Image className="size-5 text-muted-foreground" aria-hidden />}</span><span className="max-w-xs truncate">{r[c.key] ?? "—"}</span></div> : c.render ? c.render(r) : (r[c.key] ?? "—")}
+                          {resourceKey === "banners" && c.key === "title" ? <div className="flex min-w-0 items-center gap-3"><span className="grid h-14 w-20 shrink-0 place-items-center overflow-hidden rounded-md bg-muted">{r["imageUrl"] ? <img src={mediaUrl(String(r["imageUrl"]))} alt="" className="size-full object-cover" /> : <Image className="size-5 text-muted-foreground" aria-hidden />}</span><span className="max-w-xs truncate">{r[c.key] ?? "—"}</span></div> : c.render ? c.render(r) : (r[c.key] ?? "—")}
                         </td>
                       ))}
                       <td className="px-3 py-2 text-right">
@@ -139,6 +153,7 @@ export function ResourceList({
                             {def.readOnlyDetail ? "ເບິ່ງລາຍລະອຽດ" : t("edit")}
                           </Link>
                         </Button>
+                        {["faqs", "partners"].includes(resourceKey) && <Button type="button" variant="ghost" size="icon" className="ml-1 size-9 text-muted-foreground hover:bg-expired-bg hover:text-destructive" aria-label={`ລຶບ ${String(r["question"] ?? r["name"])}`} onClick={() => setSelected({ id: String(r["id"]), label: String(r["question"] ?? r["name"]) })}><Trash2 className="size-4" aria-hidden /></Button>}
                       </td>
                     </tr>
                   ))}
@@ -174,6 +189,18 @@ export function ResourceList({
           </>
         )}
       </section>
+      <AlertDialog open={selected !== null} onOpenChange={open => { if (!open && !del.isPending) setSelected(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ຢືນຢັນການລຶບ{def.singular}?</AlertDialogTitle>
+            <AlertDialogDescription className="break-words">{selected?.label}<br />ການລຶບບໍ່ສາມາດຍ້ອນກັບໄດ້</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={del.isPending}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={del.isPending} onClick={event => { event.preventDefault(); if (selected) del.mutate(selected.id); }}>{del.isPending ? t("loading") : t("delete")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

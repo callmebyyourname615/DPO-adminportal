@@ -12,7 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import { AuthGate } from "@/components/admin/AuthGate";
 import { AppShell } from "@/components/admin/AppShell";
-import { Toaster } from "@/components/ui/sonner";
+import { AlertOverlay } from "@/components/AlertOverlay";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -137,7 +137,7 @@ function RootComponent() {
       <AuthGate>{(user, logout) => <AppShell userName={user.name} userRole={user.role} onLogout={logout}>
         <Outlet />
       </AppShell>}</AuthGate>
-      <Toaster richColors position="top-right" />
+      <AlertOverlay />
     </QueryClientProvider>
   );
 }

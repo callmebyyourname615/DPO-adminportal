@@ -1,5 +1,6 @@
 // Shared input rules used by forms. Server must re-validate everything.
-export const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+// Match the API's slug rule, including the Lao/Unicode slugs in existing content.
+export const SLUG_RE = /^[^\s/?#]+$/u;
 
 export function isValidSlug(v: string): boolean {
   return SLUG_RE.test(v);
@@ -21,10 +22,10 @@ export function isValidEmail(v: string): boolean {
 export function slugify(v: string): string {
   return v
     .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[^a-z0-9\s-]/g, "")
+    .normalize("NFKC")
+    .replace(/[^\p{L}\p{M}\p{N}\s_-]/gu, "")
     .trim()
-    .replace(/[\s-]+/g, "-");
+    .replace(/[\s_-]+/g, "-");
 }
 
 export const MAX_UPLOAD_MB = { image: 5, document: 20, audio: 10 } as const;

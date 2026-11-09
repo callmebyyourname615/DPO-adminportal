@@ -14,6 +14,7 @@ import {
   Shield,
   Building2,
   UserRound,
+  ChartNoAxesCombined,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { NotificationBell } from "./NotificationBell";
@@ -25,7 +26,7 @@ import { t, type I18nKey } from "@/lib/i18n";
 
 type Item = { to: string; key: I18nKey; icon: typeof Home; exact?: boolean | undefined };
 const groups: { label: I18nKey; items: Item[] }[] = [
-  { label: "dashboard", items: [{ to: "/", key: "dashboard", icon: LayoutDashboard, exact: true }] },
+  { label: "dashboard", items: [{ to: "/", key: "dashboard", icon: LayoutDashboard, exact: true }, { to: "/visitors", key: "visitors", icon: ChartNoAxesCombined }] },
   {
     label: "groupContent",
     items: [

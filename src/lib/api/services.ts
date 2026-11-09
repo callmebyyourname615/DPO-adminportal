@@ -13,6 +13,8 @@ import type {
   PaginatedResponse,
   Partner,
   SiteSettings,
+  VisitorReport, VisitorFilters, VisitorEvent,
+  AdminUser,
 } from "./types";
 
 
@@ -78,4 +80,24 @@ export const uploadMedia = (file: File) => {
   const body = new FormData();
   body.append("file", file);
   return apiRequest<Media>("/api/admin/media/upload", { method: "POST", body });
+};
+
+export const audioOptionsService = {
+  list: () => apiRequest<Pick<Media, "url" | "fileName">[]>("/api/admin/media/audio-options"),
+};
+
+export const usersService = {
+  list: () => apiRequest<AdminUser[]>("/api/admin/users"),
+  me: () => apiRequest<AdminUser>("/api/auth/me"),
+  create: (data: { email: string; name: string; password: string; role: string }) => apiRequest<AdminUser>("/api/admin/users", { method: "POST", body: data }),
+  update: (id: string, data: { active?: boolean; role?: string }) => apiRequest<AdminUser>(`/api/admin/users/${encodeURIComponent(id)}`, { method: "PATCH", body: data }),
+  resetPassword: (id: string, password: string) => apiRequest<AdminUser>(`/api/admin/users/${encodeURIComponent(id)}`, { method: "PATCH", body: { password } }),
+  remove: (id: string) => apiRequest<void>(`/api/admin/users/${encodeURIComponent(id)}`, { method: "DELETE" }),
+};
+
+export const visitorService = {
+  report: (filters: VisitorFilters) => apiRequest<VisitorReport>("/api/admin/analytics/visitors", { query: { ...filters } }),
+  events: (filters: VisitorFilters, page = 1) => apiRequest<PaginatedResponse<VisitorEvent>>("/api/admin/analytics/visitors/events", { query: { ...filters, page, limit: 20 } }),
+  export: (filters: VisitorFilters) => apiRequest<Blob>("/api/admin/analytics/visitors/export", { query: { ...filters }, responseType: "blob" }),
+  legacy: () => apiRequest<{ today: number; week: number; month: number; total: number }>("/api/visitors"),
 };

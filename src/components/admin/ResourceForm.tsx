@@ -1,8 +1,9 @@
+import { mediaUrl } from "@/lib/api/media";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Building2, ExternalLink, FileText, ImagePlus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notifications";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { ApiNotConnectedError, canUseData, getApiBaseUrl } from "@/lib/api/client";
+import { ApiNotConnectedError, canUseData } from "@/lib/api/client";
 import { services, type CrudService } from "@/lib/api/services";
 import { formatBytes, formatDate, t } from "@/lib/i18n";
 import { documentCategories, newsCategories, resources, type FieldDef } from "@/lib/resources";
@@ -24,6 +25,9 @@ import { NewsDetail } from "./NewsDetail";
 import { PageHeader } from "./PageHeader";
 import { QueryState, StateBlock } from "./StateBlock";
 import { FieldInput, validateFields, type Values } from "./FormFields";
+import { slugify } from "@/lib/validation";
+import type { Inquiry } from "@/lib/api/types";
+import { InquiryDetail } from "./InquiryDetail";
 
 export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: string }) {
   const def = resources[resourceKey]!;
@@ -49,6 +53,7 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: str
   useEffect(() => { if (isNews && typeof window !== "undefined" && window.location.hash === "#edit") setEditingNews(true); }, [isNews, id]);
   const [values, setValues] = useState<Values>(() => initialValues(def.fields));
   const [uploadingFields, setUploadingFields] = useState<string[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [confirm, setConfirm] = useState<null | "delete" | "unpublish">(null);
 
@@ -59,33 +64,47 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: str
   const save = useMutation({
     mutationFn: (v: Values) => (isNew ? svc.create(v as never) : svc.update(id, v as never)),
     onSuccess: (res: any) => {
-      toast.success(t("saved"));
+      notify.success(t("saved"));
       qc.invalidateQueries({ queryKey: [def.key] });
       if (isNew && res?.id) navigate({ to: `${def.basePath}/$id` as "/news/$id", params: { id: String(res.id) } });
     },
-    onError: (e) =>
-      toast.error(e instanceof ApiNotConnectedError ? t("notConnected") : `ບັນທຶກລົ້ມເຫລວ: ${e.message}`),
+    onError: (e) => {
+      if (def.slugResource && "status" in e && e.status === 409) {
+        setErrors(previous => ({ ...previous, slug: "Slug ນີ້ຖືກໃຊ້ແລ້ວ" }));
+        document.getElementById("f-slug")?.focus();
+      }
+      notify.error(e instanceof ApiNotConnectedError ? t("notConnected") : `ບັນທຶກລົ້ມເຫລວ: ${e.message}`);
+    },
   });
   const del = useMutation({
     mutationFn: () => svc.remove(id),
     onSuccess: () => {
-      toast.success(t("deleted"));
+      notify.success(t("deleted"));
       qc.invalidateQueries({ queryKey: [def.key] });
       navigate({ to: listTo });
     },
-    onError: (e) => toast.error(`ລຶບບໍ່ສຳເລັດ: ${e.message}`),
+    onError: (e) => notify.error(`ລຶບບໍ່ສຳເລັດ: ${e.message}`),
   });
 
   const submit = (skipConfirm = false) => {
-    const errs = validateFields(def.fields, values);
+    if (save.isPending || uploadingFields.length) return;
+    const prepared = { ...values };
+    for (const field of def.fields) {
+      if (field.type === "slug" && field.slugFrom) {
+        prepared[field.name] = String(values[field.name] ?? "").trim() || slugify(String(values[field.slugFrom] ?? ""));
+      }
+    }
+    setValues(prepared);
+    const errs = validateFields(def.fields, prepared);
     setErrors(errs);
     if (Object.keys(errs).length) {
-      toast.error("ກະລຸນາກວດເບິ່ງຂໍ້ມູນທີ່ລະບຸ.");
+      notify.error("ກະລຸນາກວດເບິ່ງຂໍ້ມູນທີ່ລະບຸ.");
+      document.getElementById(`f-${Object.keys(errs)[0]}`)?.focus();
       return;
     }
     const wasPublished = (item.data as Values | undefined)?.["status"] === "published";
     if (!skipConfirm && wasPublished && values["status"] === "draft") return setConfirm("unpublish");
-    const payload = Object.fromEntries(def.fields.map((f) => [f.name, values[f.name]]));
+    const payload = Object.fromEntries(def.fields.map((f) => [f.name, prepared[f.name]]));
     if (def.key === "documents") for (const key of ["fileName", "fileType", "fileSize", "fileStatus"]) if (values[key] !== undefined) payload[key] = values[key];
     save.mutate(payload);
   };
@@ -142,6 +161,10 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: str
     );
   }
 
+  if (resourceKey === "inquiries" && item.data) {
+    return <InquiryDetail inquiry={item.data as Inquiry} status={String(values["status"] ?? (item.data as Inquiry).status)} statusField={def.fields[0]!} onStatusChange={status => setValues(previous => ({ ...previous, status }))} onSave={() => submit()} saving={save.isPending} connected={connected} error={errors["status"]} />;
+  }
+
   if (isNews && !isNew && !editingNews && item.data) {
     return <NewsDetail news={item.data} onEdit={() => setEditingNews(true)} />;
   }
@@ -155,7 +178,6 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: str
         </div>
       )}
       <div className="grid gap-[var(--dashboard-gap)] xl:grid-cols-12">
-        {def.readOnlyDetail && !isNew && <InquiryDetail v={values} />}
         <form
           className={`panel min-w-0 p-[var(--panel-padding)] ${def.preview || isDocument || isNewPartner ? "xl:col-span-7" : "xl:col-span-12"} ${def.readOnlyDetail ? "xl:col-span-4" : ""}`}
           noValidate
@@ -177,7 +199,7 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: str
                     {section.names.map((name) => {
                       const original = def.fields.find((field) => field.name === name)!;
                       const f: FieldDef = name === "title" ? { ...original, type: "textarea", help: "ຫົວຂໍ້ທີ່ສະແດງໃນລາຍການ ແລະ ໜ້າຂ່າວ" } : name === "excerpt" ? { ...original, label: "ຂໍ້ຄວາມສະຫຼຸບ", help: "ຂໍ້ຄວາມສັ້ນສຳລັບລາຍການຂ່າວ" } : name === "content" ? { ...original, label: "ເນື້ອຫາຂ່າວ", help: "ໃສ່ເນື້ອຫາຂ່າວທັງໝົດ ແລະ ແບ່ງເປັນຫຍໍ້ໜ້າເພື່ອອ່ານງ່າຍ" } : original;
-                      return <FieldInput key={f.name} field={f} value={values[f.name]} error={errors[f.name]} values={values} newsEditor visualMedia onUploadingChange={(name, uploading) => setUploadingFields((fields) => uploading ? [...fields.filter((item) => item !== name), name] : fields.filter((item) => item !== name))} onChange={(v) => setValues((state) => ({ ...state, [f.name]: v }))} />;
+                      return <FieldInput onPreviewChange={preview => setImagePreviews(previous => ({ ...previous, [f.name]: preview }))} key={f.name} field={f} value={values[f.name]} error={errors[f.name]} values={values} newsEditor visualMedia onUploadingChange={(name, uploading) => setUploadingFields((fields) => uploading ? [...fields.filter((item) => item !== name), name] : fields.filter((item) => item !== name))} onChange={(v) => setValues((state) => ({ ...state, [f.name]: v }))} />;
                     })}
                   </div>
                 </section>
@@ -188,13 +210,13 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: str
               { title: "ຂໍ້ມູນເອກະສານ", description: "ຊື່ ປະເພດ ແລະວັນທີຂອງເອກະສານ", names: ["title", "category", "documentDate"] },
               { title: "ໄຟລ໌ເອກະສານ", description: "ອັບໂຫຼດໄຟລ໌ທີ່ຕ້ອງການເຜີຍແຜ່", names: ["fileUrl"] },
               { title: "ການເຜີຍແຜ່", description: "ເລືອກສະຖານະກ່ອນບັນທຶກ", names: ["status"] },
-            ].map((section,index) => <section key={section.title} className={index ? "border-t border-border pt-6" : ""}><div className="mb-5"><h2 className="text-base font-semibold text-foreground">{section.title}</h2><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{section.description}</p></div><div className="grid gap-4 md:grid-cols-2">{section.names.map(name => { const f = def.fields.find(field => field.name === name)!; return <FieldInput key={f.name} field={f} value={values[f.name]} error={errors[f.name]} values={values} visualDocument onUploadingChange={(field, uploading) => setUploadingFields(fields => uploading ? [...fields.filter(item => item !== field), field] : fields.filter(item => item !== field))} onChange={(v, media) => setValues(state => ({ ...state, [f.name]: v, ...(media ? { fileName: media.fileName, fileType: media.fileName.toLowerCase().endsWith(".xlsx") ? "xlsx" : "pdf", fileSize: media.size, fileStatus: "available" } : {}) }))} />; })}</div></section>)}</div>
+            ].map((section,index) => <section key={section.title} className={index ? "border-t border-border pt-6" : ""}><div className="mb-5"><h2 className="text-base font-semibold text-foreground">{section.title}</h2><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{section.description}</p></div><div className="grid gap-4 md:grid-cols-2">{section.names.map(name => { const f = def.fields.find(field => field.name === name)!; return <FieldInput onPreviewChange={preview => setImagePreviews(previous => ({ ...previous, [f.name]: preview }))} key={f.name} field={f} value={values[f.name]} error={errors[f.name]} values={values} visualDocument onUploadingChange={(field, uploading) => setUploadingFields(fields => uploading ? [...fields.filter(item => item !== field), field] : fields.filter(item => item !== field))} onChange={(v, media) => setValues(state => ({ ...state, [f.name]: v, ...(media ? { fileName: media.fileName, fileType: media.fileName.toLowerCase().endsWith(".xlsx") ? "xlsx" : "pdf", fileSize: media.size, fileStatus: "available" } : {}) }))} />; })}</div></section>)}</div>
           ) : isNewPartner ? (
             <div className="space-y-8">{[
               { title: "ຂໍ້ມູນອົງການ", description: "ຊື່ ເວັບໄຊ ແລະໂລໂກ້ຂອງອົງການ", names: ["name", "url", "logoUrl"] },
               { title: "ຂໍ້ມູນຕິດຕໍ່", description: "ທີ່ຢູ່ ແລະຊ່ອງທາງຕິດຕໍ່", names: ["address", "phone", "email"] },
               { title: "ການສະແດງ", description: "ກຳນົດລຳດັບ ແລະສະຖານະການເຜີຍແຜ່", names: ["order", "status"] },
-            ].map((section,index) => <section key={section.title} className={index ? "border-t border-border pt-6" : ""}><div className="mb-5"><h2 className="text-base font-semibold text-foreground">{section.title}</h2><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{section.description}</p></div><div className="grid gap-4 md:grid-cols-2">{section.names.map(name => { const f = def.fields.find(field => field.name === name)!; return <FieldInput key={f.name} field={f} value={values[f.name]} error={errors[f.name]} values={values} visualMedia onUploadingChange={(field, uploading) => setUploadingFields(fields => uploading ? [...fields.filter(item => item !== field), field] : fields.filter(item => item !== field))} onChange={value => setValues(state => ({ ...state, [f.name]: value }))} />; })}</div></section>)}</div>
+            ].map((section,index) => <section key={section.title} className={index ? "border-t border-border pt-6" : ""}><div className="mb-5"><h2 className="text-base font-semibold text-foreground">{section.title}</h2><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{section.description}</p></div><div className="grid gap-4 md:grid-cols-2">{section.names.map(name => { const f = def.fields.find(field => field.name === name)!; return <FieldInput onPreviewChange={preview => setImagePreviews(previous => ({ ...previous, [f.name]: preview }))} key={f.name} field={f} value={values[f.name]} error={errors[f.name]} values={values} visualMedia onUploadingChange={(field, uploading) => setUploadingFields(fields => uploading ? [...fields.filter(item => item !== field), field] : fields.filter(item => item !== field))} onChange={value => setValues(state => ({ ...state, [f.name]: value }))} />; })}</div></section>)}</div>
           ) : isSiteContent ? (
             <div className="space-y-8">{(resourceKey === "banners" ? [
               { title: "ຂໍ້ມູນແບນເນີ", description: "ຊື່ ແລະລິ້ງປາຍທາງ", names: ["title", "linkUrl"] },
@@ -204,12 +226,13 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: str
               { title: "ເນື້ອຫາ", description: "ຊື່ ແລະເນື້ອຫາຂອງໜ້າ", names: ["title", "content"] },
               { title: "ຮູບພາບ", description: "ເລືອກຮູບປະກອບໜ້າ", names: ["imageUrl"] },
               { title: "ການເຜີຍແຜ່", description: "ກຳນົດທີ່ຢູ່ ແລະສະຖານະ", names: ["slug", "status"] },
-            ]).map((section,index) => <section key={section.title} className={index ? "border-t border-border pt-6" : ""}><div className="mb-5"><h2 className="text-base font-semibold text-foreground">{section.title}</h2><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{section.description}</p></div><div className="grid gap-4 md:grid-cols-2">{section.names.map(name => { const f = def.fields.find(field => field.name === name)!; return <FieldInput key={f.name} field={f} value={values[f.name]} error={errors[f.name]} values={values} visualMedia newsEditor onUploadingChange={(field, uploading) => setUploadingFields(fields => uploading ? [...fields.filter(item => item !== field), field] : fields.filter(item => item !== field))} onChange={value => setValues(state => ({ ...state, [f.name]: value }))} />; })}</div></section>)}</div>
+            ]).map((section,index) => <section key={section.title} className={index ? "border-t border-border pt-6" : ""}><div className="mb-5"><h2 className="text-base font-semibold text-foreground">{section.title}</h2><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{section.description}</p></div><div className="grid gap-4 md:grid-cols-2">{section.names.map(name => { const f = def.fields.find(field => field.name === name)!; return <FieldInput onPreviewChange={preview => setImagePreviews(previous => ({ ...previous, [f.name]: preview }))} key={f.name} field={f} value={values[f.name]} error={errors[f.name]} values={values} visualMedia newsEditor onUploadingChange={(field, uploading) => setUploadingFields(fields => uploading ? [...fields.filter(item => item !== field), field] : fields.filter(item => item !== field))} onChange={value => setValues(state => ({ ...state, [f.name]: value }))} />; })}</div></section>)}</div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {def.fields.map((f) => (
                 <FieldInput
                   key={f.name}
+                  onPreviewChange={preview => setImagePreviews(previous => ({ ...previous, [f.name]: preview }))}
                   field={f}
                   value={values[f.name]}
                   error={errors[f.name]}
@@ -220,15 +243,15 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id: str
             </div>
           )}
           <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-border pt-4">
-            {isNews && !isNew ? <Button type="button" variant="outline" onClick={() => { if (item.data) setValues({ ...initialValues(def.fields), ...(item.data as Values) }); setErrors({}); setEditingNews(false); }}>{t("cancel")}</Button> : <Button asChild variant="outline"><Link to={listTo}>{t("cancel")}</Link></Button>}
+            {isNews && !isNew ? <Button type="button" variant="outline" onClick={() => { if (item.data) setValues({ ...initialValues(def.fields), ...(item.data as Values) }); setErrors({}); setImagePreviews({}); setEditingNews(false); }}>{t("cancel")}</Button> : <Button asChild variant="outline"><Link to={listTo}>{t("cancel")}</Link></Button>}
             <Button type="submit" disabled={!connected || save.isPending || uploadingFields.length > 0} title={!connected ? t("saveDisabled") : undefined}>
               {save.isPending ? t("loading") : t("save")}
             </Button>
           </div>
         </form>
-        {def.preview && <Preview kind={def.preview} v={values} compact={isNews || isSiteContent} news={isNews} />}
+        {def.preview && <Preview imagePreview={imagePreviews["coverImageUrl"] || imagePreviews["imageUrl"]} kind={def.preview} v={values} compact={isNews || isSiteContent} news={isNews} />}
         {isDocument && <DocumentPreview v={values} />}
-        {isNewPartner && <PartnerPreview v={values} />}
+        {isNewPartner && <PartnerPreview imagePreview={imagePreviews["logoUrl"]} v={values} />}
       </div>
 
       <AlertDialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>
@@ -262,32 +285,7 @@ function initialValues(fields: FieldDef[]): Values {
   return v;
 }
 
-function InquiryDetail({ v }: { v: Values }) {
-  return (
-    <section className="panel p-[var(--panel-padding)] xl:col-span-8" aria-label="ລາຍລະອຽດຂໍ້ຄວາມ">
-      <dl className="grid gap-3 text-sm sm:grid-cols-2">
-        {[
-          ["ຊື່", v["name"]],
-          ["ອີເມວ", v["email"]],
-          ["ຫົວຂໍ້", v["subject"]],
-          ["ວັນທີ", formatDate(v["createdAt"] as string)],
-        ].map(([k, val]) => (
-          <div key={k as string}>
-            <dt className="text-xs text-muted-foreground">{String(k)}</dt>
-            <dd className="font-medium break-words">{(val as string) || "—"}</dd>
-          </div>
-        ))}
-      </dl>
-      <h2 className="mt-4 text-xs text-muted-foreground">ຂໍ້ຄວາມ</h2>
-      <p className="mt-1 whitespace-pre-wrap rounded-md bg-muted p-3 text-sm">{(v["message"] as string) || "—"}</p>
-      <p className="mt-3 text-xs text-muted-foreground">
-        ການຕອບກັບອີເມວຍັງບໍ່ຮອງຮັບເທື່ອ. ເນື່ອງຈາກວ່າຍັງບໍ່ທັນມີ API ສໍາລັບການສົ່ງອີເມວ
-      </p>
-    </section>
-  );
-}
-
-function Preview({ kind, v, compact = false, news = false }: { kind: "article" | "faq"; v: Values; compact?: boolean; news?: boolean }) {
+function Preview({ kind, v, compact = false, news = false, imagePreview }: { kind: "article" | "faq"; v: Values; compact?: boolean; news?: boolean; imagePreview?: string | undefined }) {
   return (
     <aside className={`panel min-w-0 self-start p-[var(--panel-padding)] xl:col-span-5 ${compact ? "xl:sticky xl:top-24" : ""}`} aria-label={t("preview")}>
       <div className="mb-4 border-b border-border pb-4"><h2 className="text-base font-semibold text-foreground">{t("preview")}</h2>{compact && <p className="mt-1 text-xs leading-relaxed text-muted-foreground">ຕົວຢ່າງຈະປ່ຽນຕາມຂໍ້ມູນທີ່ທ່ານປ້ອນ</p>}</div>
@@ -300,8 +298,8 @@ function Preview({ kind, v, compact = false, news = false }: { kind: "article" |
         </Accordion>
       ) : (
         <article>
-          {typeof (v["coverImageUrl"] ?? v["imageUrl"]) === "string" && (v["coverImageUrl"] || v["imageUrl"]) ? (
-            <img src={(v["coverImageUrl"] || v["imageUrl"]) as string} alt="" className="mb-3 aspect-video w-full rounded-md object-cover" />
+          {imagePreview || (typeof (v["coverImageUrl"] ?? v["imageUrl"]) === "string" && (v["coverImageUrl"] || v["imageUrl"])) ? (
+            <img src={imagePreview || mediaUrl((v["coverImageUrl"] || v["imageUrl"]) as string)} alt="" className="mb-3 aspect-video w-full rounded-md object-cover" />
           ) : (
             <div className="mb-4 flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-lg bg-muted text-xs text-muted-foreground">
               <ImagePlus className="size-6" aria-hidden />ຍັງບໍ່ມີຮູບໜ້າປົກ
@@ -321,15 +319,15 @@ function DocumentPreview({ v }: { v: Values }) {
   const type = typeof v["fileType"] === "string" ? v["fileType"].toLowerCase() : "";
   const category = documentCategories.find(item => item.value === v["category"])?.label ?? "—";
   const fileUrl = typeof v["fileUrl"] === "string" ? v["fileUrl"] : "";
-  const fileHref = fileUrl.startsWith("/api/") ? `${getApiBaseUrl() ?? ""}${fileUrl}` : fileUrl;
+  const fileHref = mediaUrl(fileUrl);
   return <aside className="panel min-w-0 self-start p-[var(--panel-padding)] xl:sticky xl:top-24 xl:col-span-5" aria-label="ຕົວຢ່າງເອກະສານ">
     <div className="border-b border-border pb-4"><h2 className="text-base font-semibold">ຕົວຢ່າງເອກະສານ</h2><p className="mt-1 text-xs text-muted-foreground">ຂໍ້ມູນຈະປ່ຽນຕາມທີ່ທ່ານປ້ອນ</p></div>
-    <div className="mt-5 flex min-w-0 items-start gap-4"><span className="grid size-14 shrink-0 place-items-center rounded-lg bg-muted">{type === "pdf" ? <img src="/icons/pdf.svg" alt="" className="size-9 object-contain" /> : type === "xlsx" ? <img src="/icons/excel.png" alt="" className="size-9 object-contain" /> : <FileText className="size-6 text-muted-foreground" aria-hidden />}</span><div className="min-w-0"><p className="break-words font-semibold leading-relaxed">{String(v["title"] || "ຊື່ເອກະສານ")}</p><p className="mt-1 break-all text-xs text-muted-foreground">{String(v["fileName"] || "ຍັງບໍ່ໄດ້ເລືອກໄຟລ໌")}</p></div></div>
+    <div className="mt-5 flex min-w-0 items-start gap-4"><span className="grid size-14 shrink-0 place-items-center rounded-lg bg-muted">{type === "pdf" ? <img src={mediaUrl("/api/assets/icons/pdf.svg")} alt="" className="size-9 object-contain" /> : type === "xlsx" ? <img src={mediaUrl("/api/assets/icons/excel.png")} alt="" className="size-9 object-contain" /> : <FileText className="size-6 text-muted-foreground" aria-hidden />}</span><div className="min-w-0"><p className="break-words font-semibold leading-relaxed">{String(v["title"] || "ຊື່ເອກະສານ")}</p><p className="mt-1 break-all text-xs text-muted-foreground">{String(v["fileName"] || "ຍັງບໍ່ໄດ້ເລືອກໄຟລ໌")}</p></div></div>
     <dl className="mt-5 divide-y divide-border border-t border-border text-sm"><div className="flex justify-between gap-3 py-3"><dt className="text-muted-foreground">ປະເພດ</dt><dd className="text-right">{category}</dd></div><div className="flex justify-between gap-3 py-3"><dt className="text-muted-foreground">ວັນທີ</dt><dd>{formatDate(v["documentDate"] as string)}</dd></div><div className="flex justify-between gap-3 py-3"><dt className="text-muted-foreground">ຂະໜາດໄຟລ໌</dt><dd>{formatBytes(v["fileSize"] as number | undefined)}</dd></div><div className="flex items-center justify-between gap-3 py-3"><dt className="text-muted-foreground">ສະຖານະ</dt><dd><StatusBadge status={String(v["status"] || "draft")} /></dd></div></dl>
     {fileHref && <Button asChild variant="outline" className="mt-4 min-h-11 w-full"><a href={fileHref} target="_blank" rel="noreferrer"><ExternalLink className="size-4" aria-hidden />ເປີດໄຟລ໌ເອກະສານ</a></Button>}
   </aside>;
 }
 
-function PartnerPreview({ v }: { v: Values }) {
-  return <aside className="panel min-w-0 self-start p-[var(--panel-padding)] xl:sticky xl:top-24 xl:col-span-5" aria-label="ຕົວຢ່າງອົງການ"><div className="border-b border-border pb-4"><h2 className="text-base font-semibold">ຕົວຢ່າງອົງການ</h2><p className="mt-1 text-xs text-muted-foreground">ຂໍ້ມູນຈະປ່ຽນຕາມທີ່ທ່ານປ້ອນ</p></div><div className="mt-5 flex min-w-0 items-center gap-4"><span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-lg border border-border bg-muted">{v["logoUrl"] ? <img src={String(v["logoUrl"])} alt="" className="size-full object-contain p-2" /> : <Building2 className="size-6 text-muted-foreground" aria-hidden />}</span><div className="min-w-0"><p className="break-words font-semibold leading-relaxed">{String(v["name"] || "ຊື່ອົງການ")}</p><p className="mt-1 break-all text-xs text-muted-foreground">{String(v["url"] || "ເວັບໄຊຂອງອົງການ")}</p></div></div><dl className="mt-5 divide-y divide-border border-t border-border text-sm"><div className="py-3"><dt className="text-xs text-muted-foreground">ທີ່ຢູ່</dt><dd className="mt-1 whitespace-pre-wrap break-words">{String(v["address"] || "—")}</dd></div><div className="flex justify-between gap-3 py-3"><dt className="text-muted-foreground">ເບີໂທລະສັບ</dt><dd className="break-all text-right">{String(v["phone"] || "—")}</dd></div><div className="flex justify-between gap-3 py-3"><dt className="text-muted-foreground">ອີເມວ</dt><dd className="break-all text-right">{String(v["email"] || "—")}</dd></div><div className="flex items-center justify-between gap-3 pt-3"><dt className="text-muted-foreground">ສະຖານະ</dt><dd><StatusBadge status={String(v["status"] || "draft")} /></dd></div></dl></aside>;
+function PartnerPreview({ v, imagePreview }: { v: Values; imagePreview?: string | undefined }) {
+  return <aside className="panel min-w-0 self-start p-[var(--panel-padding)] xl:sticky xl:top-24 xl:col-span-5" aria-label="ຕົວຢ່າງອົງການ"><div className="border-b border-border pb-4"><h2 className="text-base font-semibold">ຕົວຢ່າງອົງການ</h2><p className="mt-1 text-xs text-muted-foreground">ຂໍ້ມູນຈະປ່ຽນຕາມທີ່ທ່ານປ້ອນ</p></div><div className="mt-5 flex min-w-0 items-center gap-4"><span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-lg border border-border bg-muted">{imagePreview || v["logoUrl"] ? <img src={imagePreview || mediaUrl(String(v["logoUrl"]))} alt="" className="size-full object-contain p-2" /> : <Building2 className="size-6 text-muted-foreground" aria-hidden />}</span><div className="min-w-0"><p className="break-words font-semibold leading-relaxed">{String(v["name"] || "ຊື່ອົງການ")}</p><p className="mt-1 break-all text-xs text-muted-foreground">{String(v["url"] || "ເວັບໄຊຂອງອົງການ")}</p></div></div><dl className="mt-5 divide-y divide-border border-t border-border text-sm"><div className="py-3"><dt className="text-xs text-muted-foreground">ທີ່ຢູ່</dt><dd className="mt-1 whitespace-pre-wrap break-words">{String(v["address"] || "—")}</dd></div><div className="flex justify-between gap-3 py-3"><dt className="text-muted-foreground">ເບີໂທລະສັບ</dt><dd className="break-all text-right">{String(v["phone"] || "—")}</dd></div><div className="flex justify-between gap-3 py-3"><dt className="text-muted-foreground">ອີເມວ</dt><dd className="break-all text-right">{String(v["email"] || "—")}</dd></div><div className="flex items-center justify-between gap-3 pt-3"><dt className="text-muted-foreground">ສະຖານະ</dt><dd><StatusBadge status={String(v["status"] || "draft")} /></dd></div></dl></aside>;
 }
